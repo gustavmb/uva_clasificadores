@@ -1,0 +1,688 @@
+Welcome to
+      ____              __
+     / __/__  ___ _____/ /__
+    _\ \/ _ \/ _ `/ __/  '_/
+   /___/ .__/\_,_/_/ /_/\_\   version 4.1.3
+      /_/
+         
+Using Scala version 2.13.17 (OpenJDK 64-Bit Server VM, Java 21.0.12.1)
+Type in expressions to have them evaluated.
+Type :help for more information.
+Spark context Web UI available at http://vm4030.virtual.lab.inf.uva.es:4040
+Spark context available as 'sc' (master = local[*], app id = local-1792043277838).
+Spark session available as 'spark'.
+<DataFrame> 199523 entries, 42 columns
+root
+ |-- age: double (nullable = true)
+ |-- class_of_worker: string (nullable = true)
+ |-- detailed_industry_recode: string (nullable = true)
+ |-- detailed_occupation_recode: string (nullable = true)
+ |-- education: string (nullable = true)
+ |-- wage_per_hour: double (nullable = true)
+ |-- enroll_in_edu_inst_last_wk: string (nullable = true)
+ |-- marital_stat: string (nullable = true)
+ |-- major_industry_code: string (nullable = true)
+ |-- major_occupation_code: string (nullable = true)
+ |-- race: string (nullable = true)
+ |-- hispanic_origin: string (nullable = true)
+ |-- sex: string (nullable = true)
+ |-- member_of_a_labor_union: string (nullable = true)
+ |-- reason_for_unemployment: string (nullable = true)
+ |-- full_or_part_time_employment_stat: string (nullable = true)
+ |-- capital_gains: double (nullable = true)
+ |-- capital_losses: double (nullable = true)
+ |-- dividends_from_stocks: double (nullable = true)
+ |-- tax_filer_stat: string (nullable = true)
+ |-- region_of_previous_residence: string (nullable = true)
+ |-- state_of_previous_residence: string (nullable = true)
+ |-- detailed_household_and_family_stat: string (nullable = true)
+ |-- detailed_household_summary_in_household: string (nullable = true)
+ |-- instance_weight: double (nullable = true)
+ |-- migration_code_change_in_msa: string (nullable = true)
+ |-- migration_code_change_in_reg: string (nullable = true)
+ |-- migration_code_move_within_reg: string (nullable = true)
+ |-- live_in_this_house_1_year_ago: string (nullable = true)
+ |-- migration_prev_res_in_sunbelt: string (nullable = true)
+ |-- num_persons_worked_for_employer: double (nullable = true)
+ |-- family_members_under_18: string (nullable = true)
+ |-- country_of_birth_father: string (nullable = true)
+ |-- country_of_birth_mother: string (nullable = true)
+ |-- country_of_birth_self: string (nullable = true)
+ |-- citizenship: string (nullable = true)
+ |-- own_business_or_self_employed: string (nullable = true)
+ |-- fill_inc_questionnaire_for_veterans_admin: string (nullable = true)
+ |-- veterans_benefits: string (nullable = true)
+ |-- weeks_worked_in_year: double (nullable = true)
+ |-- year: string (nullable = true)
+ |-- income: string (nullable = true)
+
+  0 age                                             199523 non-null
+  1 class_of_worker                                 199523 non-null
+  2 detailed_industry_recode                        199523 non-null
+  3 detailed_occupation_recode                      199523 non-null
+  4 education                                       199523 non-null
+  5 wage_per_hour                                   199523 non-null
+  6 enroll_in_edu_inst_last_wk                      199523 non-null
+  7 marital_stat                                    199523 non-null
+  8 major_industry_code                             199523 non-null
+  9 major_occupation_code                           199523 non-null
+ 10 race                                            199523 non-null
+ 11 hispanic_origin                                 198649 non-null
+ 12 sex                                             199523 non-null
+ 13 member_of_a_labor_union                         199523 non-null
+ 14 reason_for_unemployment                         199523 non-null
+ 15 full_or_part_time_employment_stat               199523 non-null
+ 16 capital_gains                                   199523 non-null
+ 17 capital_losses                                  199523 non-null
+ 18 dividends_from_stocks                           199523 non-null
+ 19 tax_filer_stat                                  199523 non-null
+ 20 region_of_previous_residence                    199523 non-null
+ 21 state_of_previous_residence                     199523 non-null
+ 22 detailed_household_and_family_stat              199523 non-null
+ 23 detailed_household_summary_in_household         199523 non-null
+ 24 instance_weight                                 199523 non-null
+ 25 migration_code_change_in_msa                    199523 non-null
+ 26 migration_code_change_in_reg                    199523 non-null
+ 27 migration_code_move_within_reg                  199523 non-null
+ 28 live_in_this_house_1_year_ago                   199523 non-null
+ 29 migration_prev_res_in_sunbelt                   199523 non-null
+ 30 num_persons_worked_for_employer                 199523 non-null
+ 31 family_members_under_18                         199523 non-null
+ 32 country_of_birth_father                         199523 non-null
+ 33 country_of_birth_mother                         199523 non-null
+ 34 country_of_birth_self                           199523 non-null
+ 35 citizenship                                     199523 non-null
+ 36 own_business_or_self_employed                   199523 non-null
+ 37 fill_inc_questionnaire_for_veterans_admin       199523 non-null
+ 38 veterans_benefits                               199523 non-null
+ 39 weeks_worked_in_year                            199523 non-null
+ 40 year                                            199523 non-null
+ 41 income                                          199523 non-null
+Distribución de la clase objetivo (income)
+----------------------------------------
+Total de registros:        199523
+Ingresos altos (50000+):   12382 (6.21%)
+Ingresos bajos (- 50000):  187141 (93.79%)
++-------------------------+------+
+|hispanic_origin          |count |
++-------------------------+------+
+|All other                |171907|
+|Mexican-American         |8079  |
+|Mexican (Mexicano)       |7234  |
+|Central or South American|3895  |
+|Puerto Rican             |3313  |
+|Other Spanish            |2485  |
+|Cuban                    |1126  |
+|NA                       |874   |
+|Do not know              |306   |
+|Chicano                  |304   |
++-------------------------+------+
+
+Valores '?' por columna (muestra de 2000 filas)
+age                                           0
+class_of_worker                               0
+detailed_industry_recode                      0
+detailed_occupation_recode                    0
+education                                     0
+wage_per_hour                                 0
+enroll_in_edu_inst_last_wk                    0
+marital_stat                                  0
+major_industry_code                           0
+major_occupation_code                         0
+race                                          0
+hispanic_origin                               0
+sex                                           0
+member_of_a_labor_union                       0
+reason_for_unemployment                       0
+full_or_part_time_employment_stat             0
+capital_gains                                 0
+capital_losses                                0
+dividends_from_stocks                         0
+tax_filer_stat                                0
+region_of_previous_residence                  0
+state_of_previous_residence                   3
+detailed_household_and_family_stat            0
+detailed_household_summary_in_household       0
+instance_weight                               0
+migration_code_change_in_msa                  981
+migration_code_change_in_reg                  981
+migration_code_move_within_reg                981
+live_in_this_house_1_year_ago                 0
+migration_prev_res_in_sunbelt                 981
+num_persons_worked_for_employer               0
+family_members_under_18                       0
+country_of_birth_father                       64
+country_of_birth_mother                       56
+country_of_birth_self                         39
+citizenship                                   0
+own_business_or_self_employed                 0
+fill_inc_questionnaire_for_veterans_admin     0
+veterans_benefits                             0
+weeks_worked_in_year                          0
+year                                          0
+income                                        0
+filas vacías: 0
+clase inválida: 0
+duplicadas: 3229
+atributo                              count         mean          std        min        25%        50%        75%          max     skew   %zeros  n_unicos
+age                                  199523      34.4942      22.3109       0.00      15.00      33.00      50.00        90.00     0.37     1.42        91
+wage_per_hour                        199523      55.4269     274.8965       0.00       0.00       0.00       0.00      9999.00     8.94    94.33      1240
+capital_gains                        199523     434.7190    4697.5313       0.00       0.00       0.00       0.00     99999.00    18.99    96.30       132
+capital_losses                       199523      37.3138     271.8964       0.00       0.00       0.00       0.00      4608.00     7.63    98.04       113
+dividends_from_stocks                199523     197.5295    1984.1637       0.00       0.00       0.00       0.00     99999.00    27.79    89.40      1478
+instance_weight                      199523    1740.3803     993.7682      37.87    1061.62    1618.31    2188.61     18656.30     1.43     0.00     99800
+num_persons_worked_for_employer      199523       1.9562       2.3651       0.00       0.00       1.00       4.00         6.00     0.75    48.11         7
+weeks_worked_in_year                 199523      23.1749      24.4115       0.00       0.00       8.00      52.00        52.00     0.21    48.11        53
+age fuera de rango: 0
+wage_per_hour fuera de rango: 0
+capital_gains fuera de rango: 0
+capital_losses fuera de rango: 0
+dividends_from_stocks fuera de rango: 0
+instance_weight fuera de rango: 0
+num_persons_worked_for_employer fuera de rango: 0
+weeks_worked_in_year fuera de rango: 0
+Histograma age (40 bins, min=0.0, max=90.0)
+  [          0.00,           2.25)     9213
+  [          2.25,           4.50)     6597
+  [          4.50,           6.75)     6503
+  [          6.75,           9.00)     6405
+  [          9.00,          11.25)     9424
+  [         11.25,          13.50)     6212
+  [         13.50,          15.75)     5994
+  [         15.75,          18.00)     5644
+  [         18.00,          20.25)     7293
+  [         20.25,          22.50)     4959
+  [         22.50,          24.75)     5572
+  [         24.75,          27.00)     5497
+  [         27.00,          29.25)     8821
+  [         29.25,          31.50)     6554
+  [         31.50,          33.75)     6528
+  [         33.75,          36.00)     6939
+  [         36.00,          38.25)     9908
+  [         38.25,          40.50)     6258
+  [         40.50,          42.75)     6129
+  [         42.75,          45.00)     5675
+  [         45.00,          47.25)     8458
+  [         47.25,          49.50)     4552
+  [         49.50,          51.75)     4429
+  [         51.75,          54.00)     4015
+  [         54.00,          56.25)     5185
+  [         56.25,          58.50)     3222
+  [         58.50,          60.75)     3140
+  [         60.75,          63.00)     3028
+  [         63.00,          65.25)     4630
+  [         65.25,          67.50)     2939
+  [         67.50,          69.75)     2848
+  [         69.75,          72.00)     2828
+  [         72.00,          74.25)     3896
+  [         74.25,          76.50)     2115
+  [         76.50,          78.75)     1855
+  [         78.75,          81.00)     1610
+  [         81.00,          83.25)     1896
+  [         83.25,          85.50)      942
+  [         85.50,          87.75)      649
+  [         87.75,          90.00)     1161
+Histograma wage_per_hour (40 bins, min=0.0, max=9999.0)
+  [          0.00,         249.98)   188320
+  [        249.98,         499.95)     1232
+  [        499.95,         749.93)     3569
+  [        749.93,         999.90)     2255
+  [        999.90,        1249.88)     1587
+  [       1249.88,        1499.85)      779
+  [       1499.85,        1749.83)      767
+  [       1749.83,        1999.80)      409
+  [       1999.80,        2249.78)      274
+  [       2249.78,        2499.75)       95
+  [       2499.75,        2749.73)       90
+  [       2749.73,        2999.70)       30
+  [       2999.70,        3249.67)       23
+  [       3249.67,        3499.65)       14
+  [       3499.65,        3749.63)        9
+  [       3749.63,        3999.60)        6
+  [       3999.60,        4249.58)        6
+  [       4249.58,        4499.55)        1
+  [       4499.55,        4749.53)        5
+  [       4749.53,        4999.50)        7
+  [       4999.50,        5249.47)        6
+  [       5249.47,        5499.45)        1
+  [       5499.45,        5749.43)        5
+  [       5749.43,        5999.40)        0
+  [       5999.40,        6249.38)        4
+  [       6249.38,        6499.35)        1
+  [       6499.35,        6749.33)        7
+  [       6749.33,        6999.30)        2
+  [       6999.30,        7249.28)        1
+  [       7249.28,        7499.25)        1
+  [       7499.25,        7749.22)        1
+  [       7749.22,        7999.20)        1
+  [       7999.20,        8249.18)        4
+  [       8249.18,        8499.15)        1
+  [       8499.15,        8749.13)        2
+  [       8749.13,        8999.10)        1
+  [       8999.10,        9249.07)        1
+  [       9249.07,        9499.05)        2
+  [       9499.05,        9749.03)        0
+  [       9749.03,        9999.00)        4
+Histograma capital_gains (40 bins, min=0.0, max=99999.0)
+  [          0.00,        2499.98)   193563
+  [       2499.98,        4999.95)     1996
+  [       4999.95,        7499.92)     1268
+  [       7499.92,        9999.90)      850
+  [       9999.90,       12499.88)      198
+  [      12499.88,       14999.85)      188
+  [      14999.85,       17499.83)      815
+  [      17499.83,       19999.80)       14
+  [      19999.80,       22499.77)       93
+  [      22499.77,       24999.75)        0
+  [      24999.75,       27499.73)       41
+  [      27499.73,       29999.70)       94
+  [      29999.70,       32499.68)        0
+  [      32499.68,       34999.65)       11
+  [      34999.65,       37499.63)        0
+  [      37499.63,       39999.60)        0
+  [      39999.60,       42499.58)        2
+  [      42499.58,       44999.55)        0
+  [      44999.55,       47499.53)        0
+  [      47499.53,       49999.50)        0
+  [      49999.50,       52499.48)        0
+  [      52499.48,       54999.45)        0
+  [      54999.45,       57499.42)        0
+  [      57499.42,       59999.40)        0
+  [      59999.40,       62499.38)        0
+  [      62499.38,       64999.35)        0
+  [      64999.35,       67499.33)        0
+  [      67499.33,       69999.30)        0
+  [      69999.30,       72499.28)        0
+  [      72499.28,       74999.25)        0
+  [      74999.25,       77499.22)        0
+  [      77499.22,       79999.20)        0
+  [      79999.20,       82499.18)        0
+  [      82499.18,       84999.15)        0
+  [      84999.15,       87499.13)        0
+  [      87499.13,       89999.10)        0
+  [      89999.10,       92499.08)        0
+  [      92499.08,       94999.05)        0
+  [      94999.05,       97499.03)        0
+  [      97499.03,       99999.00)      390
+Histograma capital_losses (40 bins, min=0.0, max=4608.0)
+  [          0.00,         115.20)   195617
+  [        115.20,         230.40)       11
+  [        230.40,         345.60)       10
+  [        345.60,         460.80)       29
+  [        460.80,         576.00)        0
+  [        576.00,         691.20)       32
+  [        691.20,         806.40)        5
+  [        806.40,         921.60)       14
+  [        921.60,        1036.80)        6
+  [       1036.80,        1152.00)       17
+  [       1152.00,        1267.20)       20
+  [       1267.20,        1382.40)       25
+  [       1382.40,        1497.60)      200
+  [       1497.60,        1612.80)      462
+  [       1612.80,        1728.00)      361
+  [       1728.00,        1843.20)      203
+  [       1843.20,        1958.40)      996
+  [       1958.40,        2073.60)      681
+  [       2073.60,        2188.80)      124
+  [       2188.80,        2304.00)      164
+  [       2304.00,        2419.20)      257
+  [       2419.20,        2534.40)       79
+  [       2534.40,        2649.60)       60
+  [       2649.60,        2764.80)       42
+  [       2764.80,        2880.00)       34
+  [       2880.00,        2995.20)        0
+  [       2995.20,        3110.40)       11
+  [       3110.40,        3225.60)        8
+  [       3225.60,        3340.80)        0
+  [       3340.80,        3456.00)        0
+  [       3456.00,        3571.20)       10
+  [       3571.20,        3686.40)        4
+  [       3686.40,        3801.60)        5
+  [       3801.60,        3916.80)        2
+  [       3916.80,        4032.00)        0
+  [       4032.00,        4147.20)        0
+  [       4147.20,        4262.40)        0
+  [       4262.40,        4377.60)       30
+  [       4377.60,        4492.80)        0
+  [       4492.80,        4608.00)        4
+Histograma dividends_from_stocks (40 bins, min=0.0, max=99999.0)
+  [          0.00,        2499.98)   196020
+  [       2499.98,        4999.95)     1562
+  [       4999.95,        7499.92)      696
+  [       7499.92,        9999.90)      360
+  [       9999.90,       12499.88)      324
+  [      12499.88,       14999.85)      100
+  [      14999.85,       17499.83)      105
+  [      17499.83,       19999.80)       31
+  [      19999.80,       22499.77)       68
+  [      22499.77,       24999.75)       19
+  [      24999.75,       27499.73)       54
+  [      27499.73,       29999.70)       16
+  [      29999.70,       32499.68)       41
+  [      32499.68,       34999.65)        4
+  [      34999.65,       37499.63)       10
+  [      37499.63,       39999.60)        5
+  [      39999.60,       42499.58)       21
+  [      42499.58,       44999.55)        1
+  [      44999.55,       47499.53)        4
+  [      47499.53,       49999.50)       14
+  [      49999.50,       52499.48)       19
+  [      52499.48,       54999.45)        4
+  [      54999.45,       57499.42)        1
+  [      57499.42,       59999.40)        1
+  [      59999.40,       62499.38)        7
+  [      62499.38,       64999.35)        0
+  [      64999.35,       67499.33)        2
+  [      67499.33,       69999.30)        0
+  [      69999.30,       72499.28)        3
+  [      72499.28,       74999.25)        0
+  [      74999.25,       77499.22)        5
+  [      77499.22,       79999.20)        0
+  [      79999.20,       82499.18)        0
+  [      82499.18,       84999.15)        0
+  [      84999.15,       87499.13)        0
+  [      87499.13,       89999.10)        0
+  [      89999.10,       92499.08)        0
+  [      92499.08,       94999.05)        0
+  [      94999.05,       97499.03)        1
+  [      97499.03,       99999.00)       25
+Histograma instance_weight (40 bins, min=37.87, max=18656.3)
+  [         37.87,         503.33)    15619
+  [        503.33,         968.79)    24600
+  [        968.79,        1434.25)    44053
+  [       1434.25,        1899.71)    43769
+  [       1899.71,        2365.17)    30214
+  [       2365.17,        2830.63)    15698
+  [       2830.63,        3296.10)    10526
+  [       3296.10,        3761.56)     7467
+  [       3761.56,        4227.02)     3855
+  [       4227.02,        4692.48)     1533
+  [       4692.48,        5157.94)      835
+  [       5157.94,        5623.40)      455
+  [       5623.40,        6088.86)      312
+  [       6088.86,        6554.32)      176
+  [       6554.32,        7019.78)      112
+  [       7019.78,        7485.24)       83
+  [       7485.24,        7950.70)       57
+  [       7950.70,        8416.16)       49
+  [       8416.16,        8881.62)       37
+  [       8881.62,        9347.09)       24
+  [       9347.09,        9812.55)       11
+  [       9812.55,       10278.01)       10
+  [      10278.01,       10743.47)        7
+  [      10743.47,       11208.93)        5
+  [      11208.93,       11674.39)        5
+  [      11674.39,       12139.85)        3
+  [      12139.85,       12605.31)        2
+  [      12605.31,       13070.77)        1
+  [      13070.77,       13536.23)        2
+  [      13536.23,       14001.69)        1
+  [      14001.69,       14467.15)        0
+  [      14467.15,       14932.61)        0
+  [      14932.61,       15398.07)        0
+  [      15398.07,       15863.54)        0
+  [      15863.54,       16329.00)        0
+  [      16329.00,       16794.46)        1
+  [      16794.46,       17259.92)        0
+  [      17259.92,       17725.38)        0
+  [      17725.38,       18190.84)        0
+  [      18190.84,       18656.30)        1
+Histograma num_persons_worked_for_employer (40 bins, min=0.0, max=6.0)
+  [          0.00,           0.15)    95983
+  [          0.15,           0.30)        0
+  [          0.30,           0.45)        0
+  [          0.45,           0.60)        0
+  [          0.60,           0.75)        0
+  [          0.75,           0.90)        0
+  [          0.90,           1.05)    23109
+  [          1.05,           1.20)        0
+  [          1.20,           1.35)        0
+  [          1.35,           1.50)        0
+  [          1.50,           1.65)        0
+  [          1.65,           1.80)        0
+  [          1.80,           1.95)        0
+  [          1.95,           2.10)    10081
+  [          2.10,           2.25)        0
+  [          2.25,           2.40)        0
+  [          2.40,           2.55)        0
+  [          2.55,           2.70)        0
+  [          2.70,           2.85)        0
+  [          2.85,           3.00)        0
+  [          3.00,           3.15)    13425
+  [          3.15,           3.30)        0
+  [          3.30,           3.45)        0
+  [          3.45,           3.60)        0
+  [          3.60,           3.75)        0
+  [          3.75,           3.90)        0
+  [          3.90,           4.05)    14379
+  [          4.05,           4.20)        0
+  [          4.20,           4.35)        0
+  [          4.35,           4.50)        0
+  [          4.50,           4.65)        0
+  [          4.65,           4.80)        0
+  [          4.80,           4.95)        0
+  [          4.95,           5.10)     6035
+  [          5.10,           5.25)        0
+  [          5.25,           5.40)        0
+  [          5.40,           5.55)        0
+  [          5.55,           5.70)        0
+  [          5.70,           5.85)        0
+  [          5.85,           6.00)    36511
+Histograma weeks_worked_in_year (40 bins, min=0.0, max=52.0)
+  [          0.00,           1.30)    96447
+  [          1.30,           2.60)      458
+  [          2.60,           3.90)      417
+  [          3.90,           5.20)     1066
+  [          5.20,           6.50)      646
+  [          6.50,           7.80)      152
+  [          7.80,           9.10)     1365
+  [          9.10,          10.40)      694
+  [         10.40,          11.70)       78
+  [         11.70,          13.00)     1780
+  [         13.00,          14.30)      753
+  [         14.30,          15.60)      353
+  [         15.60,          16.90)      945
+  [         16.90,          18.20)      603
+  [         18.20,          19.50)       48
+  [         19.50,          20.80)     1330
+  [         20.80,          22.10)      505
+  [         22.10,          23.40)       67
+  [         23.40,          24.70)      767
+  [         24.70,          26.00)      457
+  [         26.00,          27.30)     2344
+  [         27.30,          28.60)      568
+  [         28.60,          29.90)       63
+  [         29.90,          31.20)     1429
+  [         31.20,          32.50)      883
+  [         32.50,          33.80)       81
+  [         33.80,          35.10)      934
+  [         35.10,          36.40)     1108
+  [         36.40,          37.70)      123
+  [         37.70,          39.00)      380
+  [         39.00,          40.30)     3392
+  [         40.30,          41.60)       88
+  [         41.60,          42.90)      573
+  [         42.90,          44.20)     1219
+  [         44.20,          45.50)      669
+  [         45.50,          46.80)      708
+  [         46.80,          48.10)     2084
+  [         48.10,          49.40)      509
+  [         49.40,          50.70)     2304
+  [         50.70,          52.00)    71133
+atributo                                      n_categorias moda                                           freq_moda_%
+detailed_industry_recode                                52 0                                                    50.46
+state_of_previous_residence                             51 Not in universe                                      92.09
+detailed_occupation_recode                              47 0                                                    50.46
+country_of_birth_father                                 43 United-States                                        79.77
+country_of_birth_mother                                 43 United-States                                        80.43
+country_of_birth_self                                   43 United-States                                        88.71
+detailed_household_and_family_stat                      38 Householder                                          26.69
+major_industry_code                                     24 Not in universe or children                          50.46
+education                                               17 High school graduate                                 24.26
+major_occupation_code                                   15 Not in universe                                      50.46
+hispanic_origin                                         10 All other                                            86.16
+migration_code_change_in_msa                            10 ?                                                    49.97
+migration_code_move_within_reg                          10 ?                                                    49.97
+class_of_worker                                          9 Not in universe                                      50.24
+migration_code_change_in_reg                             9 ?                                                    49.97
+full_or_part_time_employment_stat                        8 Children or Armed Forces                             62.03
+detailed_household_summary_in_household                  8 Householder                                          37.83
+marital_stat                                             7 Never married                                        43.35
+reason_for_unemployment                                  6 Not in universe                                      96.96
+tax_filer_stat                                           6 Nonfiler                                             37.64
+region_of_previous_residence                             6 Not in universe                                      92.09
+race                                                     5 White                                                83.88
+family_members_under_18                                  5 Not in universe                                      72.29
+citizenship                                              5 Native- Born in the United States                    88.71
+migration_prev_res_in_sunbelt                            4 ?                                                    49.97
+enroll_in_edu_inst_last_wk                               3 Not in universe                                      93.69
+member_of_a_labor_union                                  3 Not in universe                                      90.45
+live_in_this_house_1_year_ago                            3 Not in universe under 1 year old                     50.73
+own_business_or_self_employed                            3 0                                                    90.55
+fill_inc_questionnaire_for_veterans_admin                3 Not in universe                                      99.01
+veterans_benefits                                        3 2                                                    75.24
+sex                                                      2 Female                                               52.12
+year                                                     2 94                                                   50.03
+Frecuencias de education
+  High school graduate                                  48407
+  Children                                              47422
+  Some college but no degree                            27820
+  Bachelors degree(BA AB BS)                            19865
+  7th and 8th grade                                      8007
+  10th grade                                             7557
+  11th grade                                             6876
+  Masters degree(MA MS MEng MEd MSW MBA)                 6541
+  9th grade                                              6230
+  Associates degree-occup /vocational                    5358
+  Associates degree-academic program                     4363
+  5th or 6th grade                                       3277
+  12th grade no diploma                                  2126
+  1st 2nd 3rd or 4th grade                               1799
+  Prof school degree (MD DDS DVM LLB JD)                 1793
+  Doctorate degree(PhD EdD)                              1263
+  Less than 1st grade                                     819
+Frecuencias de major_occupation_code
+  Not in universe                                      100684
+  Adm support including clerical                        14837
+  Professional specialty                                13940
+  Executive admin and managerial                        12495
+  Other service                                         12099
+  Sales                                                 11783
+  Precision production craft & repair                   10518
+  Machine operators assmblrs & inspctrs                  6379
+  Handlers equip cleaners etc                            4127
+  Transportation and material moving                     4020
+  Farming forestry and fishing                           3146
+  Technicians and related support                        3018
+  Protective services                                    1661
+  Private household services                              780
+  Armed Forces                                             36
+Frecuencias de marital_stat
+  Never married                                         86485
+  Married-civilian spouse present                       84222
+  Divorced                                              12710
+  Widowed                                               10463
+  Separated                                              3460
+  Married-spouse absent                                  1518
+  Married-A F spouse present                              665
+atributo                                       interrogacion  not_in_universe  interrogacion_%
+migration_code_change_in_msa                           99696             1516            49.97
+migration_code_change_in_reg                           99696             1516            49.97
+migration_code_move_within_reg                         99696             1516            49.97
+migration_prev_res_in_sunbelt                          99696            84054            49.97
+country_of_birth_father                                 6713                0             3.36
+country_of_birth_mother                                 6119                0             3.07
+country_of_birth_self                                   3393                0             1.70
+state_of_previous_residence                              708           183750             0.35
+atributo                       n>0      %>0          max   limite_extremo  n_extremos
+age                         196684    98.58        90.00           152.00           0
+wage_per_hour                11304     5.67      9999.00          3045.75         104
+capital_gains                 7379     3.70     99999.00         33188.00         403
+capital_losses                3906     1.96      4608.00          2997.00          74
+dividends_from_stocks        21141    10.60     99999.00          5202.00        1602
+390
++--------+-----+
+|income  |count|
++--------+-----+
+|50000+. |344  |
+|- 50000.|46   |
++--------+-----+
+
+pearson
+                                           age wage_per_h capital_ga capital_lo dividends_ instance_w num_person weeks_work
+age                                       1.00       0.04       0.05       0.06       0.10      -0.00       0.14       0.21
+wage_per_hour                             0.04       1.00      -0.00       0.01      -0.01       0.01       0.19       0.20
+capital_gains                             0.05      -0.00       1.00      -0.01       0.13       0.00       0.06       0.08
+capital_losses                            0.06       0.01      -0.01       1.00       0.04       0.01       0.08       0.10
+dividends_from_stocks                     0.10      -0.01       0.13       0.04       1.00      -0.00       0.01       0.01
+instance_weight                          -0.00       0.01       0.00       0.01      -0.00       1.00       0.04       0.03
+num_persons_worked_for_employer           0.14       0.19       0.06       0.08       0.01       0.04       1.00       0.75
+weeks_worked_in_year                      0.21       0.20       0.08       0.10       0.01       0.03       0.75       1.00
+spearman
+                                           age wage_per_h capital_ga capital_lo dividends_ instance_w num_person weeks_work
+age                                       1.00       0.04       0.13       0.07       0.25       0.01       0.25       0.29
+wage_per_hour                             0.04       1.00       0.01       0.01       0.00       0.02       0.23       0.22
+capital_gains                             0.13       0.01       1.00      -0.03       0.12       0.00       0.12       0.13
+capital_losses                            0.07       0.01      -0.03       1.00       0.07       0.01       0.10       0.11
+dividends_from_stocks                     0.25       0.00       0.12       0.07       1.00       0.01       0.15       0.16
+instance_weight                           0.01       0.02       0.00       0.01       0.01       1.00       0.04       0.03
+num_persons_worked_for_employer           0.25       0.23       0.12       0.10       0.15       0.04       1.00       0.88
+weeks_worked_in_year                      0.29       0.22       0.13       0.11       0.16       0.03       0.88       1.00
+Matriz de Cramér's V escrita en /home/usuario/census/cramers_v_matrix.csv
+detailed_industry_recode                      major_industry_code                           1.000000
+detailed_occupation_recode                    major_occupation_code                         1.000000
+migration_code_change_in_msa                  live_in_this_house_1_year_ago                 1.000000
+migration_code_change_in_msa                  year                                          1.000000
+migration_code_change_in_reg                  live_in_this_house_1_year_ago                 1.000000
+migration_code_change_in_reg                  year                                          1.000000
+migration_code_move_within_reg                live_in_this_house_1_year_ago                 1.000000
+migration_code_move_within_reg                year                                          1.000000
+migration_prev_res_in_sunbelt                 year                                          1.000000
+live_in_this_house_1_year_ago                 migration_prev_res_in_sunbelt                 0.992034
+live_in_this_house_1_year_ago                 year                                          0.985387
+region_of_previous_residence                  state_of_previous_residence                   0.967090
+detailed_household_and_family_stat            detailed_household_summary_in_household       0.966468
+Cramér's V (nominal vs income)
+detailed_occupation_recode                    0.438209
+education                                     0.389837
+major_occupation_code                         0.366264
+detailed_industry_recode                      0.292957
+major_industry_code                           0.277860
+class_of_worker                               0.260531
+detailed_household_and_family_stat            0.240458
+tax_filer_stat                                0.229232
+detailed_household_summary_in_household       0.227220
+marital_stat                                  0.197655
+full_or_part_time_employment_stat             0.159847
+family_members_under_18                       0.159167
+sex                                           0.157589
+veterans_benefits                             0.144339
+own_business_or_self_employed                 0.083900
+member_of_a_labor_union                       0.075000
+country_of_birth_father                       0.071503
+country_of_birth_mother                       0.070537
+hispanic_origin                               0.068608
+enroll_in_edu_inst_last_wk                    0.064190
+country_of_birth_self                         0.060872
+race                                          0.058737
+citizenship                                   0.040930
+migration_code_change_in_msa                  0.038681
+migration_code_change_in_reg                  0.038005
+migration_code_move_within_reg                0.038000
+state_of_previous_residence                   0.033228
+region_of_previous_residence                  0.029170
+migration_prev_res_in_sunbelt                 0.029077
+live_in_this_house_1_year_ago                 0.027918
+reason_for_unemployment                       0.027896
+fill_inc_questionnaire_for_veterans_admin     0.027372
+year                                          0.014773
+|Correlación| (numérico vs income)
+weeks_worked_in_year                          0.262316
+capital_gains                                 0.240725
+num_persons_worked_for_employer               0.222684
+dividends_from_stocks                         0.175779
+capital_losses                                0.147417
+age                                           0.135720
+wage_per_hour                                 0.024528
+instance_weight                               0.014463
+:quit
