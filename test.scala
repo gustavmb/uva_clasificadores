@@ -58,8 +58,7 @@ val censusSchema = StructType(Array(
 ))
 
 // Leemos el DataFrame con la estructura definida
-import org.apache.spark.sql.Row
-val rawCensusDF = spark.read.format("csv").schema(censusSchema).load(PATH)
+val rawCensusDF = spark.read.format("csv").schema(censusSchema).load(PATH + DATA)
 
 // Muestra las primeras 5 columnas y 5 lineas
 rawCensusDF.select(rawCensusDF.columns.take(5).map(col): _*).show(5)
@@ -74,8 +73,19 @@ val numCols = contCols ++ discCols
 val codeCols = Seq("detailed_industry_recode", "detailed_occupation_recode",
   "own_business_or_self_employed", "veterans_benefits", "year")
 
-// Cantidade de classes positivas y negativas
+// Cantidad de classes positivas y negativas
+val totalRows = rawCensusDF.count()
 rawCensusDF
   .groupBy(trim(col(classCol)).as(classCol))
   .count()
+  .withColumn("label", when(col(classCol) === "50000+.", "positive").otherwise("negative"))
+  .withColumn("percentage", round(col("count") * 100.0 / totalRows, 2))
+  .orderBy(desc("count"))
   .show()
+
+// Cantidad de NA's en hispanic_origin
+val naHispanic: Long = (rawCensusDF
+  .filter(col("hispanic_origin").isNull || trim(col("hispanic_origin")) === "NA")
+  .count())
+
+println(s"NA's en hispanic_origin: $naHispanic de $totalRows (${math.round(naHispanic * 10000.0 / totalRows) / 100.0}%)")
