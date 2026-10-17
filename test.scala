@@ -1,0 +1,81 @@
+import org.apache.spark.sql.{DataFrame, Row}
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types.{StructType, StructField, StringType}
+
+/* Directorio con los datos y conjunto de datos */
+val PATH="./"
+val DATA="census-income.data"
+
+// Importamos las clases para definir el schema (esquema) del DataFrame:
+//   StructType  -> el esquema completo: la lista ordenada de columnas (campos) de cada fila
+//   StructField -> una columna: nombre, tipo de dato y si admite valores nulos
+//   StringType  -> tipo texto; todos los atributos y la clase de car.data son categóricos,
+//                  así que todas las columnas se declaran como String
+//   DoubleType  -> tipo numérico (no se usa aquí; se usará más adelante, al pasar a índices numéricos)
+val censusSchema = StructType(Array(
+    StructField("age", StringType, true),
+    StructField("class_of_worker", StringType, true),
+    StructField("detailed_industry_recode", StringType, true),
+    StructField("detailed_occupation_recode", StringType, true),
+    StructField("education", StringType, true),
+    StructField("wage_per_hour", StringType, true),
+    StructField("enroll_in_edu_inst_last_wk", StringType, true),
+    StructField("marital_stat", StringType, true),
+    StructField("major_industry_code", StringType, true),
+    StructField("major_occupation_code", StringType, true),
+    StructField("race", StringType, true),
+    StructField("hispanic_origin", StringType, true),
+    StructField("sex", StringType, true),
+    StructField("member_of_a_labor_union", StringType, true),
+    StructField("reason_for_unemployment", StringType, true),
+    StructField("full_or_part_time_employment_stat", StringType, true),
+    StructField("capital_gains", StringType, true),
+    StructField("capital_losses", StringType, true),
+    StructField("dividends_from_stocks", StringType, true),
+    StructField("tax_filer_stat", StringType, true),
+    StructField("region_of_previous_residence", StringType, true),
+    StructField("state_of_previous_residence", StringType, true),
+    StructField("detailed_household_and_family_stat", StringType, true),
+    StructField("detailed_household_summary_in_household", StringType, true),
+    StructField("instance_weight", StringType, true),
+    StructField("migration_code_change_in_msa", StringType, true),
+    StructField("migration_code_change_in_reg", StringType, true),
+    StructField("migration_code_move_within_reg", StringType, true),
+    StructField("live_in_this_house_1_year_ago", StringType, true),
+    StructField("migration_prev_res_in_sunbelt", StringType, true),
+    StructField("num_persons_worked_for_employer", StringType, true),
+    StructField("family_members_under_18", StringType, true),
+    StructField("country_of_birth_father", StringType, true),
+    StructField("country_of_birth_mother", StringType, true),
+    StructField("country_of_birth_self", StringType, true),
+    StructField("citizenship", StringType, true),
+    StructField("own_business_or_self_employed", StringType, true),
+    StructField("fill_inc_questionnaire_for_veterans_admin", StringType, true),
+    StructField("veterans_benefits", StringType, true),
+    StructField("weeks_worked_in_year", StringType, true),
+    StructField("year", StringType, true),
+    StructField("income", StringType, true) // class label: '- 50000.' or '50000+.'
+))
+
+// Leemos el DataFrame con la estructura definida
+import org.apache.spark.sql.Row
+val rawCensusDF = spark.read.format("csv").schema(censusSchema).load(PATH)
+
+// Muestra las primeras 5 columnas y 5 lineas
+rawCensusDF.select(rawCensusDF.columns.take(5).map(col): _*).show(5)
+
+// Lista de atributos
+val classCol = "income"
+val contCols = Seq("age", "wage_per_hour", "capital_gains",
+  "capital_losses", "dividends_from_stocks", "instance_weight")
+val discCols = Seq("num_persons_worked_for_employer", "weeks_worked_in_year")
+val numCols = contCols ++ discCols
+// these are codes, not numbers
+val codeCols = Seq("detailed_industry_recode", "detailed_occupation_recode",
+  "own_business_or_self_employed", "veterans_benefits", "year")
+
+// Cantidade de classes positivas y negativas
+rawCensusDF
+  .groupBy(trim(col(classCol)).as(classCol))
+  .count()
+  .show()
