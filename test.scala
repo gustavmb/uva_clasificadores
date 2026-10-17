@@ -140,4 +140,33 @@ Seq(("vacías", nEmpty), ("inválidas", nInvalid), ("duplicadas", nDup))
   .show()
 
 // Estadísticas de los atributos Numéricos (mín., máx., media, desviación, distribución, valores atípicos)
+/*
+Además de count, mean, std, min, quartis y max, se añaden:
+- skew     = asimetría (cerca de 0 es simétrica, arriba de 1 muy inclinada a la derecha)
+- %zeros   = porcentaje de valores iguales a 0
+- n_unicos = cuántos valores distintos hay
+*/
+val numDF = rawCensusDF.select(numCols.map(c => trim(col(c)).cast("double").as(c)): _*)
+
+// Una fila por atributo, con las estadísticas como columnas
+val statsDF = numCols.map { c =>
+  val x = col(c)
+  numDF.agg(
+    lit(c).as("atributo"),
+    count(x).as("count"),
+    mean(x).as("mean"),
+    stddev(x).as("std"),
+    min(x).as("min"),
+    expr(s"percentile_approx(`$c`, array(0.25, 0.5, 0.75))").as("q"),
+    max(x).as("max"),
+    skewness(x).as("skew"),
+    (avg(when(x === 0, 1.0).otherwise(0.0)) * 100).as("%zeros"),
+    countDistinct(x).as("n_unicos"))
+}.reduce(_ union _)
+
+statsDF
+  .select(col("atributo"), col("count"), round(col("mean"), 2).as("mean"), round(col("std"), 2).as("std"),
+    col("min"), col("q")(0).as("25%"), col("q")(1).as("50%"), col("q")(2).as("75%"), col("max"),
+    round(col("skew"), 2).as("skew"), round(col("%zeros"), 2).as("%zeros"), col("n_unicos"))
+  .show(false)
 
