@@ -170,3 +170,17 @@ statsDF
     round(col("skew"), 2).as("skew"), round(col("%zeros"), 2).as("%zeros"), col("n_unicos"))
   .show(false)
 
+// Estadísticas de los atributos nominales (valores posibles, moda, frecuencia)
+val nomCols = rawCensusDF.columns.filterNot(c => numCols.contains(c) || c == classCol).toSeq
+
+val nomStats = nomCols.map { c =>
+  rawCensusDF
+    .groupBy(trim(col(c)).as("valor"))
+    .count()
+    .agg(lit(c).as("atributo"), count("*").as("valores_posibles"), max(struct(col("count"), col("valor"))).as("m"))
+}.reduce(_ union _)
+
+nomStats
+  .select(col("atributo"), col("valores_posibles"), col("m.valor").as("moda"), col("m.count").as("frecuencia"))
+  .show(nomCols.size, false)
+
