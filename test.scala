@@ -83,9 +83,64 @@ rawCensusDF
   .orderBy(desc("count"))
   .show()
 
+/*         
+Los valores "NA" en hispanic_origin non son nulos.
+Los verdaderos nulos son los "?" que hay en las columnas mencionadas abajo (qCols).
+*/
+
 // Cantidad de NA's en hispanic_origin
 val naHispanic: Long = (rawCensusDF
   .filter(col("hispanic_origin").isNull || trim(col("hispanic_origin")) === "NA")
   .count())
 
 println(s"NA's en hispanic_origin: $naHispanic de $totalRows (${math.round(naHispanic * 10000.0 / totalRows) / 100.0}%)")
+
+// Cantidad de "?" por columnas (solo en las columnas que tienen "?")
+val qCols = Seq(
+  "state_of_previous_residence",
+  "migration_code_change_in_msa",
+  "migration_code_change_in_reg",
+  "migration_code_move_within_reg",
+  "migration_prev_res_in_sunbelt",
+  "country_of_birth_father",
+  "country_of_birth_mother",
+  "country_of_birth_self"
+)
+
+val qCounts = rawCensusDF.select(qCols.map(c => sum(when(trim(col(c)) === "?", 1).otherwise(0)).as(c)): _*).first()
+
+println("%-35s %11s".format("Nombre de Columna", "Incidencias"))
+println("-" * 47)
+qCols.foreach(c => println(f"$c%-35s ${qCounts.getAs[Long](c)}%11d"))
+
+// La distribución de los atributos: 6 continuos, 2 discretos, 0 booleanos y 33 nominales
+val nomCols = rawCensusDF.columns.filterNot(c => numCols.contains(c) || c == classCol).toSeq
+val attrDist = Seq("continuos" -> contCols.size, "discretos" -> discCols.size, "booleanos" -> 0, "nominales" -> nomCols.size)
+
+println("%-15s %10s".format("Tipo", "Cantidad"))
+println("-" * 26)
+attrDist.foreach { case (tipo, n) => println(f"$tipo%-15s $n%10d") }
+println("-" * 26)
+println("%-15s %10d".format("total", attrDist.map(_._2).sum))
+
+// Instancias vacías, inválidas y duplicadas
+// vacía: todas las columnas son null (el CSV lee los campos vacíos como null)
+val nEmpty = totalRows - rawCensusDF.na.drop("all").count()
+// inválida: la clase no es "- 50000." ni "50000+."
+val nInvalid: rawCensusDF.filter(!trim(col(classCol)).isin("- 50000.", "50000+.")).count()
+// duplicada: fila repetida (total - distintas)
+val nDup = totalRows - rawCensusDF.distinct().count()
+
+/*
+Aunque haya varias columnas duplicadas, hemos decidido no eliminar, porque:
+- Los datos de censo, dos personas diferentes pueden tener exactamente los 
+mismos valores en todas las columnas.
+*/
+
+Seq(("vacías", nEmpty), ("inválidas", nInvalid), ("duplicadas", nDup))
+  .toDF("instancias", "count")
+  .withColumn("percentage", round(col("count") * 100.0 / totalRows, 2))
+  .show()
+
+// Estadísticas de los atributos Numéricos (mín., máx., media, desviación, distribución, valores atípicos)
+
