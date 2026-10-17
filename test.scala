@@ -114,20 +114,17 @@ println("-" * 47)
 qCols.foreach(c => println(f"$c%-35s ${qCounts.getAs[Long](c)}%11d"))
 
 // La distribución de los atributos: 6 continuos, 2 discretos, 0 booleanos y 33 nominales
-val nomCols = rawCensusDF.columns.filterNot(c => numCols.contains(c) || c == classCol).toSeq
-val attrDist = Seq("continuos" -> contCols.size, "discretos" -> discCols.size, "booleanos" -> 0, "nominales" -> nomCols.size)
+val nNominales = rawCensusDF.columns.length - 1 - numCols.size // sin la clase ni las numéricas
 
-println("%-15s %10s".format("Tipo", "Cantidad"))
-println("-" * 26)
-attrDist.foreach { case (tipo, n) => println(f"$tipo%-15s $n%10d") }
-println("-" * 26)
-println("%-15s %10d".format("total", attrDist.map(_._2).sum))
+Seq(("continuos", contCols.size), ("discretos", discCols.size), ("booleanos", 0), ("nominales", nNominales))
+  .toDF("tipo", "count")
+  .show()
 
 // Instancias vacías, inválidas y duplicadas
 // vacía: todas las columnas son null (el CSV lee los campos vacíos como null)
 val nEmpty = totalRows - rawCensusDF.na.drop("all").count()
 // inválida: la clase no es "- 50000." ni "50000+."
-val nInvalid: rawCensusDF.filter(!trim(col(classCol)).isin("- 50000.", "50000+.")).count()
+val nInvalid = rawCensusDF.filter(!trim(col(classCol)).isin("- 50000.", "50000+.")).count()
 // duplicada: fila repetida (total - distintas)
 val nDup = totalRows - rawCensusDF.distinct().count()
 
