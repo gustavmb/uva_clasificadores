@@ -184,3 +184,17 @@ nomStats
   .select(col("atributo"), col("valores_posibles"), col("m.valor").as("moda"), col("m.count").as("frecuencia"))
   .show(nomCols.size, false)
 
+// Ausentes (?) y “Not in universe”
+val ausentes = nomCols.map { c =>
+  rawCensusDF.agg(
+    lit(c).as("atributo"),
+    sum(when(trim(col(c)) === "Not in universe", 1).otherwise(0)).as("not_in_universe"),
+    sum(when(trim(col(c)) === "?", 1).otherwise(0)).as("interrogacion"))
+}.reduce(_ union _)
+/*
+"?" es un valor ausente. "Not in universe" es una categoría válida y no cuenta como ausente
+*/
+ausentes
+  .withColumn("interrogacion_%", round(col("interrogacion") * 100.0 / totalRows, 2))
+  .orderBy(desc("interrogacion"))
+  .show(nomCols.size, false)
