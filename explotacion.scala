@@ -195,6 +195,12 @@ val ausentes = nomCols.map { c =>
 "?" es un valor ausente. "Not in universe" es una categoría válida y no cuenta como ausente
 */
 ausentes
+  .filter(col("not_in_universe") > 0 || col("interrogacion") > 0)
+  .withColumn("not_in_universe_%", round(col("not_in_universe") * 100.0 / totalRows, 2))
   .withColumn("interrogacion_%", round(col("interrogacion") * 100.0 / totalRows, 2))
+  .select("atributo", "not_in_universe", "not_in_universe_%", "interrogacion", "interrogacion_%")
   .orderBy(desc("interrogacion"))
   .show(nomCols.size, false)
+
+// Valores atípicos (outliers)
+
