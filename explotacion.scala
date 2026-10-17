@@ -203,4 +203,22 @@ ausentes
   .show(nomCols.size, false)
 
 // Valores atípicos (outliers)
+val outCols = contCols.filterNot(_ == "instance_weight") // quitamos por ser muestral
+val ceroInfladas = outCols.filterNot(_ == "age")
+
+val outliers = outCols.map { c =>
+  val base = if (ceroInfladas.contains(c)) numDF.filter(col(c) > 0) else numDF
+  val q = base.stat.approxQuantile(c, Array(0.25, 0.75), 0.001)
+  val lim = q(1) + 3 * (q(1) - q(0))
+  numDF.agg(
+    lit(c).as("atributo"),
+    lit(q(0)).as("q1"),
+    lit(q(1)).as("q3"),
+    lit(lim).as("limite_sup"),
+    sum(when(col(c) > lim, 1).otherwise(0)).as("n_atipicos"))
+}.reduce(_ union _)
+
+outliers
+  .withColumn("atipicos_%", round(col("n_atipicos") * 100.0 / totalRows, 2))
+  .show(false)
 
