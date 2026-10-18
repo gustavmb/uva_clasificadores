@@ -1,6 +1,9 @@
 import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{StructType, StructField, StringType}
+import org.apache.spark.ml.feature.VectorAssembler
+import org.apache.spark.ml.linalg.Matrix
+import org.apache.spark.ml.stat.Correlation
 
 /* Directorio con los datos y conjunto de datos */
 val PATH="./"
@@ -222,3 +225,58 @@ outliers
   .withColumn("atipicos_%", round(col("n_atipicos") * 100.0 / totalRows, 2))
   .show(false)
 
+
+// Matriz de correlación (Pearson y Spearman) entre los atributos numéricos y la clase
+/*
+- Pearson  = relación lineal entre dos atributos
+- Spearman = relación monótona (sobre los rangos), más robusta a atípicos y a las
+             distribuciones muy inclinadas (skew) de este conjunto de datos
+La clase se añade como "income_bin" (1 = "50000+.", 0 = "- 50000.") para ver la
+correlación de cada atributo numérico con la variable objetivo.
+*/
+val corrCols = numCols :+ "income_bin"
+
+val corrInputDF = rawCensusDF
+  .select(numCols.map(c => trim(col(c)).cast("double").as(c)) :+
+    when(trim(col(classCol)) === "50000+.", 1.0).otherwise(0.0).as("income_bin"): _*)
+  .na.drop(corrCols)
+
+val corrVecDF = new VectorAssembler()
+  .setInputCols(corrCols.toArray)
+  .setOutputCol("features")
+  .transform(corrInputDF)
+  .select("features")
+
+// La matriz (atributo x atributo) como DataFrame, redondeada a 2 decimales
+def corrMatrixDF(m: Matrix, cols: Seq[String]): DataFrame =
+  (for (i <- cols.indices; j <- cols.indices) yield (i, cols(i), cols(j), m(i, j)))
+    .toDF("orden", "atributo", "columna", "valor")
+    .groupBy("orden", "atributo")
+    .pivot("columna", cols)
+    .agg(round(first("valor"), 2))
+    .orderBy("orden")
+    .drop("orden")
+
+val pearsonM = Correlation.corr(corrVecDF, "features", "pearson").head.getAs[Matrix](0)
+val spearmanM = Correlation.corr(corrVecDF, "features", "spearman").head.getAs[Matrix](0)
+
+println("Matriz de correlación de Pearson")
+corrMatrixDF(pearsonM, corrCols)
+  .show(false)
+
+println("Matriz de correlación de Spearman")
+corrMatrixDF(spearmanM, corrCols)
+  .show(false)
+
+// Pares de atributos ordenados por correlación absoluta (sin la diagonal ni repetidos)
+val paresCorr = for {
+  i <- corrCols.indices
+  j <- (i + 1) until corrCols.size
+} yield (corrCols(i), corrCols(j), pearsonM(i, j), spearmanM(i, j))
+
+paresCorr
+  .toDF("atributo_1", "atributo_2", "pearson", "spearman")
+  .withColumn("pearson", round(col("pearson"), 3))
+  .withColumn("spearman", round(col("spearman"), 3))
+  .orderBy(abs(col("spearman")).desc)
+  .show(paresCorr.size, false)
