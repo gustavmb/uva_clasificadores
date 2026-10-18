@@ -280,3 +280,41 @@ paresCorr
   .withColumn("spearman", round(col("spearman"), 3))
   .orderBy(abs(col("spearman")).desc)
   .show(paresCorr.size, false)
+
+// Limpieza: columnas que se eliminan y ausentes que se imputan
+/*
+Se eliminan las columnas que no aportan información:
+- las de migración: ~50% de "?" (demasiados ausentes para imputar con fiabilidad)
+  y además las cuatro describen lo mismo, que ya recoge live_in_this_house_1_year_ago
+- instance_weight: es el peso muestral del censo, no un atributo de la persona
+  (la documentación indica ignorarla; su correlación con todo lo demás es ~0)
+- wage_per_hour: ~95% ceros y correlación nula con la clase (Pearson 0.02, Spearman -0.01)
+- year: solo toma los valores 94 y 95; es metadato de la recogida de datos
+*/
+val dropCols = Seq(
+  "migration_code_change_in_msa",
+  "migration_code_change_in_reg",
+  "migration_code_move_within_reg",
+  "migration_prev_res_in_sunbelt",
+  "instance_weight",
+  "wage_per_hour",
+  "year")
+
+/*
+En el resto de columnas los "?" son pocos (~2-3%), así que no se eliminan las filas:
+se sustituyen por la categoría explícita "Unknown". Borrar esas filas descartaría
+instancias que son válidas en todos los demás atributos.
+*/
+val imputeCols = qCols.diff(dropCols)
+
+val cleanDF = imputeCols
+  .foldLeft(rawCensusDF.drop(dropCols: _*)) { (df, c) =>
+    df.withColumn(c, when(trim(col(c)) === "?", "Unknown").otherwise(trim(col(c))))
+  }
+
+println(s"Columnas: ${rawCensusDF.columns.length} -> ${cleanDF.columns.length}")
+
+// Comprobación: ya no quedan "?" en las columnas imputadas
+cleanDF
+  .select(imputeCols.map(c => sum(when(col(c) === "?", 1).otherwise(0)).as(c)): _*)
+  .show(false)
