@@ -329,10 +329,45 @@ val cleanDF = imputeCols
     df.withColumn(c, when(trim(col(c)) === "?", modas(c)).otherwise(trim(col(c))))
   }
 
-println(s"Columnas reducidas tras eliminacion de columnas irrelevantes: ${rawCensusDF.columns.length} -> ${cleanDF.columns.length}")
+println(s"\nColumnas reducidas tras eliminacion de columnas irrelevantes: ${rawCensusDF.columns.length} -> ${cleanDF.columns.length}")
 
 // Comprobación: ya no quedan "?" en las columnas imputadas
-println("Comprobación de columnas imputadas. Valor '?' no presente")
+println("\nComprobación de columnas imputadas. Valor '?' no presente")
 cleanDF
   .select(imputeCols.map(c => sum(when(col(c) === "?", 1).otherwise(0)).as(c)): _*)
   .show(false)
+
+// Tratamiento de los valores atípicos: capado (winsorización)
+/*
+Los atípicos no son errores de captura, sino valores reales y poco frecuentes.
+No se eliminan las filas porque se concentran en la clase positiva, que ya es
+minoritaria (~6%): descartarlas quitaría justamente las instancias más informativas.
+En su lugar se capan al límite superior (q3 + 3*IQR), lo que conserva la instancia
+y su orden de magnitud, pero neutraliza el efecto de la cola sobre media y varianza.
+Los cuantiles se calculan sobre los valores > 0, porque son columnas cero-infladas
+y de lo contrario q1 y q3 serían ambos 0.
+age no se incluye: no presenta ningún valor atípico.
+*/
+println("\nValores Atipicos (Outliers): ")
+val capCols = Seq("capital_gains", "capital_losses", "dividends_from_stocks").diff(dropCols)
+
+val limites: Map[String, Double] = capCols.map { c =>
+  val q = numDF.filter(col(c) > 0).stat.approxQuantile(c, Array(0.25, 0.75), 0.001)
+  c -> (q(1) + 3 * (q(1) - q(0)))
+}.toMap
+
+// Las columnas capadas pasan a ser numéricas (double)
+val cappedDF = capCols.foldLeft(cleanDF) { (df, c) =>
+  val x = trim(col(c)).cast("double")
+  df.withColumn(c, when(x > limites(c), lit(limites(c))).otherwise(x))
+}
+
+// Cuántos valores se han capado en cada columna
+cappedDF
+  .select(capCols.map(c => sum(when(col(c) === limites(c), 1).otherwise(0)).as(c)): _*)
+  .show(false)
+
+println("\n Aplicando windsorizacion:")
+println("%-25s %12s".format("Columna", "Límite sup."))
+println("-" * 38)
+capCols.foreach(c => println("%-25s %12.1f".format(c, limites(c))))
