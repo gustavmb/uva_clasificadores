@@ -302,19 +302,37 @@ val dropCols = Seq(
 
 /*
 En el resto de columnas los "?" son pocos (~2-3%), así que no se eliminan las filas:
-se sustituyen por la categoría explícita "Unknown". Borrar esas filas descartaría
-instancias que son válidas en todos los demás atributos.
+se sustituyen por la moda (el valor más frecuente de cada columna, sin contar los "?").
+Borrar esas filas descartaría instancias que son válidas en todos los demás atributos.
 */
 val imputeCols = qCols.diff(dropCols)
 
+// Moda de cada columna a imputar, ignorando los propios "?"
+val modas: Map[String, String] = imputeCols.map { c =>
+  val moda = rawCensusDF
+    .select(trim(col(c)).as("valor"))
+    .filter(col("valor") =!= "?")
+    .groupBy("valor")
+    .count()
+    .orderBy(desc("count"))
+    .first()
+    .getAs[String]("valor")
+  c -> moda
+}.toMap
+
+println("%-35s %s".format("Columna", "Moda imputada"))
+println("-" * 60)
+imputeCols.foreach(c => println("%-35s %s".format(c, modas(c))))
+
 val cleanDF = imputeCols
   .foldLeft(rawCensusDF.drop(dropCols: _*)) { (df, c) =>
-    df.withColumn(c, when(trim(col(c)) === "?", "Unknown").otherwise(trim(col(c))))
+    df.withColumn(c, when(trim(col(c)) === "?", modas(c)).otherwise(trim(col(c))))
   }
 
-println(s"Columnas: ${rawCensusDF.columns.length} -> ${cleanDF.columns.length}")
+println(s"Columnas reducidas tras eliminacion de columnas irrelevantes: ${rawCensusDF.columns.length} -> ${cleanDF.columns.length}")
 
 // Comprobación: ya no quedan "?" en las columnas imputadas
+println("Comprobación de columnas imputadas. Valor '?' no presente")
 cleanDF
   .select(imputeCols.map(c => sum(when(col(c) === "?", 1).otherwise(0)).as(c)): _*)
   .show(false)
