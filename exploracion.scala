@@ -371,3 +371,133 @@ println("\n Aplicando windsorizacion:")
 println("%-25s %12s".format("Columna", "Límite sup."))
 println("-" * 38)
 capCols.foreach(c => println("%-25s %12.1f".format(c, limites(c))))
+
+// Selección de atributos: asociación de cada nominal con la clase (Cramér's V)
+/*
+Pearson y Spearman no sirven para los atributos nominales. Para medirlos usamos
+Cramér's V, que normaliza el estadístico chi-cuadrado al intervalo [0, 1] y permite
+comparar atributos con distinto número de categorías:
+  0.00-0.05  sin asociación      0.05-0.10  débil
+  0.10-0.20  moderada            > 0.20     fuerte
+Se aplica la corrección de Yates cuando los grados de libertad son 1 (tablas 2x2).
+*/
+def cramersVCells(cells: Map[(String, String), Double]): Double = {
+  val rowTotals = cells.groupBy(_._1._1).map { case (k, v) => k -> v.values.sum }
+  val colTotals = cells.groupBy(_._1._2).map { case (k, v) => k -> v.values.sum }
+  val n = cells.values.sum
+  val dof = (rowTotals.size - 1) * (colTotals.size - 1)
+  var chi2 = 0.0
+  for ((rk, rt) <- rowTotals; (ck, ct) <- colTotals) {
+    val esperado = rt * ct / n
+    var diff = cells.getOrElse((rk, ck), 0.0) - esperado
+    if (dof == 1) diff = math.signum(diff) * math.max(0.0, math.abs(diff) - 0.5)
+    chi2 += diff * diff / esperado
+  }
+  val k = math.min(rowTotals.size, colTotals.size) - 1
+  math.sqrt(chi2 / (n * k))
+}
+
+// La tabla de contingencia se agrega en Spark; solo se recoge la tabla pequeña
+def cramersV(data: DataFrame, x: String, y: String): Double = {
+  val cells = data
+    .select(coalesce(trim(col(x)), lit("NULO")).as("x"), coalesce(trim(col(y)), lit("NULO")).as("y"))
+    .groupBy("x", "y")
+    .count()
+    .collect()
+    .map(r => ((r.getString(0), r.getString(1)), r.getLong(2).toDouble))
+    .toMap
+  cramersVCells(cells)
+}
+
+// Nominales que quedan tras la limpieza
+val nomColsClean = cappedDF.columns
+  .filterNot(c => numCols.contains(c) || c == classCol)
+  .toSeq
+
+// Ranking de asociación con la clase, junto al número de categorías de cada atributo
+val cardinalidad = cappedDF
+  .select(nomColsClean.map(c => countDistinct(trim(col(c))).as(c)): _*)
+  .first()
+
+val ranking = nomColsClean.map { c =>
+  (c, cardinalidad.getAs[Long](c), cramersV(cappedDF, c, classCol))
+}
+
+ranking
+  .toDF("atributo", "n_categorias", "cramers_v")
+  .withColumn("cramers_v", round(col("cramers_v"), 3))
+  .withColumn("asociacion", when(col("cramers_v") >= 0.2, "fuerte")
+    .when(col("cramers_v") >= 0.1, "moderada")
+    .when(col("cramers_v") >= 0.05, "debil")
+    .otherwise("ninguna"))
+  .orderBy(desc("cramers_v"))
+  .show(nomColsClean.size, false)
+
+// Redundancia entre pares de nominales sospechosos (V alto = informacion duplicada)
+val paresRedundantes = Seq(
+  ("detailed_industry_recode", "major_industry_code"),
+  ("detailed_occupation_recode", "major_occupation_code"),
+  ("detailed_household_and_family_stat", "detailed_household_summary_in_household"),
+  ("detailed_household_and_family_stat", "marital_stat"),
+  ("race", "hispanic_origin"),
+  ("country_of_birth_self", "country_of_birth_father"),
+  ("country_of_birth_father", "country_of_birth_mother"),
+  ("country_of_birth_self", "citizenship"),
+  ("state_of_previous_residence", "region_of_previous_residence"))
+  .filter { case (a, b) => nomColsClean.contains(a) && nomColsClean.contains(b) }
+
+paresRedundantes
+  .map { case (a, b) => (a, b, cramersV(cappedDF, a, b)) }
+  .toDF("atributo_1", "atributo_2", "cramers_v")
+  .withColumn("cramers_v", round(col("cramers_v"), 3))
+  .orderBy(desc("cramers_v"))
+  .show(false)
+
+// Selección final de atributos
+/*
+De los 42 atributos originales se conservan 17 + la clase. Los criterios han sido:
+- numéricos: correlación de Pearson/Spearman con la clase
+- nominales: Cramér's V con la clase (se conservan los de asociación >= 0.14)
+- redundancia: de cada par con V muy alto se conserva un solo atributo
+
+Nota sobre la cardinalidad: Cramér's V se infla cuando el atributo tiene muchas
+categorías, así que la ventaja de detailed_occupation_recode (47 cat., V=0.438)
+sobre major_occupation_code (15 cat., V=0.366) es en parte sesgo y no señal real.
+Como V entre ambos es 1.0 (el código detallado determina el agregado), se conserva
+el detallado para modelos basados en árboles; en un modelo lineal con one-hot
+encoding conviene sustituirlo por el agregado para no disparar la dimensionalidad.
+*/
+val selNomCols = Seq(
+  "detailed_occupation_recode",              // V=0.438
+  "education",                               // V=0.390
+  "detailed_industry_recode",                // V=0.293
+  "class_of_worker",                         // V=0.261
+  "tax_filer_stat",                          // V=0.229
+  "detailed_household_summary_in_household", // V=0.227 (8 cat. frente a 38 de la detallada)
+  "marital_stat",                            // V=0.198 (V=0.476 con el hogar: complementaria)
+  "full_or_part_time_employment_stat",       // V=0.160
+  "family_members_under_18",                 // V=0.159
+  "sex",                                     // V=0.158
+  "veterans_benefits")                       // V=0.144
+
+/*
+num_persons_worked_for_employer se mantiene por ser útil en árboles de decisión,
+pero debe eliminarse en modelos lineales por su correlación de 0.88 con
+weeks_worked_in_year.
+*/
+val selNumCols = Seq(
+  "weeks_worked_in_year",            // Spearman 0.26
+  "dividends_from_stocks",           // Spearman 0.27
+  "capital_gains",                   // Pearson  0.24
+  "capital_losses",                  // Pearson  0.15
+  "age",                             // Spearman 0.16
+  "num_persons_worked_for_employer") // Spearman 0.23
+
+val finalDF = cappedDF.select(
+  selNomCols.map(c => trim(col(c)).as(c)) ++
+  selNumCols.map(c => trim(col(c)).cast("double").as(c)) :+
+  when(trim(col(classCol)) === "50000+.", 1.0).otherwise(0.0).as("label"): _*)
+
+println(s"Atributos: ${rawCensusDF.columns.length} -> ${finalDF.columns.length} (incluida la clase)")
+finalDF.printSchema()
+finalDF.show(5, false)
