@@ -79,13 +79,13 @@ val codeCols = Seq("detailed_industry_recode", "detailed_occupation_recode",
 
 // Cantidad de classes positivas y negativas
 val totalRows = rawCensusDF.count()
-rawCensusDF
+(rawCensusDF
   .groupBy(trim(col(classCol)).as(classCol))
   .count()
   .withColumn("label", when(col(classCol) === "50000+.", "positive").otherwise("negative"))
   .withColumn("percentage", round(col("count") * 100.0 / totalRows, 2))
   .orderBy(desc("count"))
-  .show()
+  .show())
 
 /*         
 Los valores "NA" en hispanic_origin non son nulos.
@@ -120,9 +120,9 @@ qCols.foreach(c => println(f"$c%-35s ${qCounts.getAs[Long](c)}%11d"))
 // La distribución de los atributos: 6 continuos, 2 discretos, 0 booleanos y 33 nominales
 val nNominales = rawCensusDF.columns.length - 1 - numCols.size // sin la clase ni las numéricas
 
-Seq(("continuos", contCols.size), ("discretos", discCols.size), ("booleanos", 0), ("nominales", nNominales))
+(Seq(("continuos", contCols.size), ("discretos", discCols.size), ("booleanos", 0), ("nominales", nNominales))
   .toDF("tipo", "count")
-  .show()
+  .show())
 
 // Instancias vacías, inválidas y duplicadas
 // vacía: todas las columnas son null (el CSV lee los campos vacíos como null)
@@ -138,10 +138,10 @@ Aunque haya varias columnas duplicadas, hemos decidido no eliminar, porque:
 mismos valores en todas las columnas.
 */
 
-Seq(("vacías", nEmpty), ("inválidas", nInvalid), ("duplicadas", nDup))
+(Seq(("vacías", nEmpty), ("inválidas", nInvalid), ("duplicadas", nDup))
   .toDF("instancias", "count")
   .withColumn("percentage", round(col("count") * 100.0 / totalRows, 2))
-  .show()
+  .show())
 
 // Estadísticas de los atributos Numéricos (mín., máx., media, desviación, distribución, valores atípicos)
 /*
@@ -168,11 +168,11 @@ val statsDF = numCols.map { c =>
     countDistinct(x).as("n_unicos"))
 }.reduce(_ union _)
 
-statsDF
+(statsDF
   .select(col("atributo"), col("count"), round(col("mean"), 2).as("mean"), round(col("std"), 2).as("std"),
     col("min"), col("q")(0).as("25%"), col("q")(1).as("50%"), col("q")(2).as("75%"), col("max"),
     round(col("skew"), 2).as("skew"), round(col("%zeros"), 2).as("%zeros"), col("n_unicos"))
-  .show(false)
+  .show(false))
 
 // Estadísticas de los atributos nominales (valores posibles, moda, frecuencia)
 val nomCols = rawCensusDF.columns.filterNot(c => numCols.contains(c) || c == classCol).toSeq
@@ -184,9 +184,9 @@ val nomStats = nomCols.map { c =>
     .agg(lit(c).as("atributo"), count("*").as("valores_posibles"), max(struct(col("count"), col("valor"))).as("m"))
 }.reduce(_ union _)
 
-nomStats
+(nomStats
   .select(col("atributo"), col("valores_posibles"), col("m.valor").as("moda"), col("m.count").as("frecuencia"))
-  .show(nomCols.size, false)
+  .show(nomCols.size, false))
 
 // Ausentes (?) y “Not in universe”
 val ausentes = nomCols.map { c =>
@@ -198,13 +198,13 @@ val ausentes = nomCols.map { c =>
 /*
 "?" es un valor ausente. "Not in universe" es una categoría válida y no cuenta como ausente
 */
-ausentes
+(ausentes
   .filter(col("not_in_universe") > 0 || col("interrogacion") > 0)
   .withColumn("not_in_universe_%", round(col("not_in_universe") * 100.0 / totalRows, 2))
   .withColumn("interrogacion_%", round(col("interrogacion") * 100.0 / totalRows, 2))
   .select("atributo", "not_in_universe", "not_in_universe_%", "interrogacion", "interrogacion_%")
   .orderBy(desc("interrogacion"))
-  .show(nomCols.size, false)
+  .show(nomCols.size, false))
 
 // Valores atípicos (outliers)
 val outCols = contCols.filterNot(_ == "instance_weight") // quitamos por ser muestral
@@ -222,9 +222,9 @@ val outliers = outCols.map { c =>
     sum(when(col(c) > lim, 1).otherwise(0)).as("n_atipicos"))
 }.reduce(_ union _)
 
-outliers
+(outliers
   .withColumn("atipicos_%", round(col("n_atipicos") * 100.0 / totalRows, 2))
-  .show(false)
+  .show(false))
 
 
 // Matriz de correlación (Pearson y Spearman) entre los atributos numéricos y la clase
@@ -237,37 +237,37 @@ correlación de cada atributo numérico con la variable objetivo.
 */
 val corrCols = numCols :+ "income_bin"
 
-val corrInputDF = rawCensusDF
+val corrInputDF = (rawCensusDF
   .select(numCols.map(c => trim(col(c)).cast("double").as(c)) :+
     when(trim(col(classCol)) === "50000+.", 1.0).otherwise(0.0).as("income_bin"): _*)
-  .na.drop(corrCols)
+  .na.drop(corrCols))
 
-val corrVecDF = new VectorAssembler()
+val corrVecDF = (new VectorAssembler()
   .setInputCols(corrCols.toArray)
   .setOutputCol("features")
   .transform(corrInputDF)
-  .select("features")
+  .select("features"))
 
 // La matriz (atributo x atributo) como DataFrame, redondeada a 2 decimales
 def corrMatrixDF(m: Matrix, cols: Seq[String]): DataFrame =
-  (for (i <- cols.indices; j <- cols.indices) yield (i, cols(i), cols(j), m(i, j)))
+  ((for (i <- cols.indices; j <- cols.indices) yield (i, cols(i), cols(j), m(i, j)))
     .toDF("orden", "atributo", "columna", "valor")
     .groupBy("orden", "atributo")
     .pivot("columna", cols)
     .agg(round(first("valor"), 2))
     .orderBy("orden")
-    .drop("orden")
+    .drop("orden"))
 
 val pearsonM = Correlation.corr(corrVecDF, "features", "pearson").head.getAs[Matrix](0)
 val spearmanM = Correlation.corr(corrVecDF, "features", "spearman").head.getAs[Matrix](0)
 
 println("Matriz de correlación de Pearson")
-corrMatrixDF(pearsonM, corrCols)
-  .show(false)
+(corrMatrixDF(pearsonM, corrCols)
+  .show(false))
 
 println("Matriz de correlación de Spearman")
-corrMatrixDF(spearmanM, corrCols)
-  .show(false)
+(corrMatrixDF(spearmanM, corrCols)
+  .show(false))
 
 // Pares de atributos ordenados por correlación absoluta (sin la diagonal ni repetidos)
 val paresCorr = for {
@@ -275,12 +275,12 @@ val paresCorr = for {
   j <- (i + 1) until corrCols.size
 } yield (corrCols(i), corrCols(j), pearsonM(i, j), spearmanM(i, j))
 
-paresCorr
+(paresCorr
   .toDF("atributo_1", "atributo_2", "pearson", "spearman")
   .withColumn("pearson", round(col("pearson"), 3))
   .withColumn("spearman", round(col("spearman"), 3))
   .orderBy(abs(col("spearman")).desc)
-  .show(paresCorr.size, false)
+  .show(paresCorr.size, false))
 
 // Limpieza: columnas que se eliminan y ausentes que se imputan
 /*
@@ -325,18 +325,18 @@ println("%-35s %s".format("Columna", "Moda imputada"))
 println("-" * 60)
 imputeCols.foreach(c => println("%-35s %s".format(c, modas(c))))
 
-val cleanDF = imputeCols
+val cleanDF = (imputeCols
   .foldLeft(rawCensusDF.drop(dropCols: _*)) { (df, c) =>
     df.withColumn(c, when(trim(col(c)) === "?", modas(c)).otherwise(trim(col(c))))
-  }
+  })
 
 println(s"\nColumnas reducidas tras eliminacion de columnas irrelevantes: ${rawCensusDF.columns.length} -> ${cleanDF.columns.length}")
 
 // Comprobación: ya no quedan "?" en las columnas imputadas
 println("\nComprobación de columnas imputadas. Valor '?' no presente")
-cleanDF
+(cleanDF
   .select(imputeCols.map(c => sum(when(col(c) === "?", 1).otherwise(0)).as(c)): _*)
-  .show(false)
+  .show(false))
 
 // Tratamiento de los valores atípicos: capado (winsorización)
 /*
@@ -364,9 +364,9 @@ val cappedDF = capCols.foldLeft(cleanDF) { (df, c) =>
 }
 
 // Cuántos valores se han capado en cada columna
-cappedDF
+(cappedDF
   .select(capCols.map(c => sum(when(col(c) === limites(c), 1).otherwise(0)).as(c)): _*)
-  .show(false)
+  .show(false))
 
 println("\n Aplicando windsorizacion:")
 println("%-25s %12s".format("Columna", "Límite sup."))
@@ -411,20 +411,20 @@ def cramersV(data: DataFrame, x: String, y: String): Double = {
 }
 
 // Nominales que quedan tras la limpieza
-val nomColsClean = cappedDF.columns
+val nomColsClean = (cappedDF.columns
   .filterNot(c => numCols.contains(c) || c == classCol)
-  .toSeq
+  .toSeq)
 
 // Ranking de asociación con la clase, junto al número de categorías de cada atributo
-val cardinalidad = cappedDF
+val cardinalidad = (cappedDF
   .select(nomColsClean.map(c => countDistinct(trim(col(c))).as(c)): _*)
-  .first()
+  .first())
 
 val ranking = nomColsClean.map { c =>
   (c, cardinalidad.getAs[Long](c), cramersV(cappedDF, c, classCol))
 }
 
-ranking
+(ranking
   .toDF("atributo", "n_categorias", "cramers_v")
   .withColumn("cramers_v", round(col("cramers_v"), 3))
   .withColumn("asociacion", when(col("cramers_v") >= 0.2, "fuerte")
@@ -432,10 +432,10 @@ ranking
     .when(col("cramers_v") >= 0.05, "debil")
     .otherwise("ninguna"))
   .orderBy(desc("cramers_v"))
-  .show(nomColsClean.size, false)
+  .show(nomColsClean.size, false))
 
 // Redundancia entre pares de nominales sospechosos (V alto = informacion duplicada)
-val paresRedundantes = Seq(
+val paresRedundantes = (Seq(
   ("detailed_industry_recode", "major_industry_code"),
   ("detailed_occupation_recode", "major_occupation_code"),
   ("detailed_household_and_family_stat", "detailed_household_summary_in_household"),
@@ -445,14 +445,14 @@ val paresRedundantes = Seq(
   ("country_of_birth_father", "country_of_birth_mother"),
   ("country_of_birth_self", "citizenship"),
   ("state_of_previous_residence", "region_of_previous_residence"))
-  .filter { case (a, b) => nomColsClean.contains(a) && nomColsClean.contains(b) }
+  .filter { case (a, b) => nomColsClean.contains(a) && nomColsClean.contains(b) })
 
-paresRedundantes
+(paresRedundantes
   .map { case (a, b) => (a, b, cramersV(cappedDF, a, b)) }
   .toDF("atributo_1", "atributo_2", "cramers_v")
   .withColumn("cramers_v", round(col("cramers_v"), 3))
   .orderBy(desc("cramers_v"))
-  .show(false)
+  .show(false))
 
 // Selección final de atributos
 /*
@@ -521,17 +521,17 @@ setHandleInvalid("keep"): algunas categorías son muy poco frecuentes (códigos 
 ocupación con unos pocos casos) y pueden aparecer en prueba sin haber aparecido en
 entrenamiento. Con "keep" reciben un índice reservado en lugar de provocar un error.
 */
-val siColumns = new StringIndexer()
+val siColumns = (new StringIndexer()
   .setInputCols(attributeColumns)
   .setOutputCols(outputColumns)
   .setStringOrderType("alphabetDesc")
-  .setHandleInvalid("keep")
+  .setHandleInvalid("keep"))
 
 val simColumns = siColumns.fit(finalDF)
 
-val censusDFnumeric = simColumns
+val censusDFnumeric = (simColumns
   .transform(finalDF)
-  .drop(attributeColumns: _*)
+  .drop(attributeColumns: _*))
 
 censusDFnumeric.show(5, false)
 
@@ -541,13 +541,13 @@ Los árboles de Spark tratan de forma nativa los atributos categóricos indexado
 particionan por subconjuntos de categorías, lo que es más expresivo que una
 codificación 1 de K y evita multiplicar la dimensionalidad.
 */
-val vaNum = new VectorAssembler()
+val vaNum = (new VectorAssembler()
   .setInputCols(outputColumns ++ selNumCols.toArray)
-  .setOutputCol("features")
+  .setOutputCol("features"))
 
-val censusFeaturesLabelDF = vaNum
+val censusFeaturesLabelDF = (vaNum
   .transform(censusDFnumeric)
-  .select("features", "label")
+  .select("features", "label"))
 
 censusFeaturesLabelDF.show(5, false)
 
@@ -561,22 +561,22 @@ introduciría una columna redundante.
 */
 val hotOutputColumns = attributeColumns.map(_ + "-hot")
 
-val hotColumns = new OneHotEncoder()
+val hotColumns = (new OneHotEncoder()
   .setInputCols(outputColumns)
-  .setOutputCols(hotOutputColumns)
+  .setOutputCols(hotOutputColumns))
 
-val censusDFhot = hotColumns
+val censusDFhot = (hotColumns
   .fit(censusDFnumeric)
   .transform(censusDFnumeric)
-  .drop(outputColumns: _*)
+  .drop(outputColumns: _*))
 
-val vaHot = new VectorAssembler()
+val vaHot = (new VectorAssembler()
   .setInputCols(hotOutputColumns ++ selNumCols.toArray)
-  .setOutputCol("features")
+  .setOutputCol("features"))
 
-val censusFeaturesLabelHotDF = vaHot
+val censusFeaturesLabelHotDF = (vaHot
   .transform(censusDFhot)
-  .select("features", "label")
+  .select("features", "label"))
 
 censusFeaturesLabelHotDF.show(5, false)
 
