@@ -2,6 +2,7 @@ import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{StructType, StructField, StringType}
 import org.apache.spark.ml.feature.VectorAssembler
+import org.apache.spark.ml.feature.{StringIndexer, OneHotEncoder}
 import org.apache.spark.ml.linalg.Matrix
 import org.apache.spark.ml.stat.Correlation
 
@@ -501,3 +502,107 @@ val finalDF = cappedDF.select(
 println(s"Atributos: ${rawCensusDF.columns.length} -> ${finalDF.columns.length} (incluida la clase)")
 finalDF.printSchema()
 finalDF.show(5, false)
+
+/*      Transformación a columnas features y label                  */
+
+/*
+Los 11 atributos nominales se pasan a índices numéricos con StringIndexer.
+Los 6 numéricos NO se indexan: ya son double y pasan directos al VectorAssembler.
+Indexarlos convertiría cada valor distinto en una categoría (90 edades -> 90
+categorías) y destruiría la relación de orden entre ellos.
+*/
+val attributeColumns = selNomCols.toArray
+val outputColumns = attributeColumns.map(_ + "-num")
+
+/*
+setStringOrderType("alphabetDesc"): el índice depende solo del valor y no de su
+frecuencia, así que la asignación es la misma en cualquier partición.
+setHandleInvalid("keep"): algunas categorías son muy poco frecuentes (códigos de
+ocupación con unos pocos casos) y pueden aparecer en prueba sin haber aparecido en
+entrenamiento. Con "keep" reciben un índice reservado en lugar de provocar un error.
+*/
+val siColumns = new StringIndexer()
+  .setInputCols(attributeColumns)
+  .setOutputCols(outputColumns)
+  .setStringOrderType("alphabetDesc")
+  .setHandleInvalid("keep")
+
+val simColumns = siColumns.fit(finalDF)
+
+val censusDFnumeric = simColumns
+  .transform(finalDF)
+  .drop(attributeColumns: _*)
+
+censusDFnumeric.show(5, false)
+
+/*
+Versión para árboles de decisión: los índices entran directamente en features.
+Los árboles de Spark tratan de forma nativa los atributos categóricos indexados y
+particionan por subconjuntos de categorías, lo que es más expresivo que una
+codificación 1 de K y evita multiplicar la dimensionalidad.
+*/
+val vaNum = new VectorAssembler()
+  .setInputCols(outputColumns ++ selNumCols.toArray)
+  .setOutputCol("features")
+
+val censusFeaturesLabelDF = vaNum
+  .transform(censusDFnumeric)
+  .select("features", "label")
+
+censusFeaturesLabelDF.show(5, false)
+
+/*
+Versión para modelos lineales (regresión logística, SVM): con codificación 1 de K.
+Es necesaria porque un índice numérico impondría un orden falso entre categorías
+("Doctorate"=3 no vale el triple que "10th grade"=1).
+Con dropLast=true (por defecto), K categorías producen un vector de tamaño K-1:
+la última queda representada por el vector de ceros, evitando la colinealidad que
+introduciría una columna redundante.
+*/
+val hotOutputColumns = attributeColumns.map(_ + "-hot")
+
+val hotColumns = new OneHotEncoder()
+  .setInputCols(outputColumns)
+  .setOutputCols(hotOutputColumns)
+
+val censusDFhot = hotColumns
+  .fit(censusDFnumeric)
+  .transform(censusDFnumeric)
+  .drop(outputColumns: _*)
+
+val vaHot = new VectorAssembler()
+  .setInputCols(hotOutputColumns ++ selNumCols.toArray)
+  .setOutputCol("features")
+
+val censusFeaturesLabelHotDF = vaHot
+  .transform(censusDFhot)
+  .select("features", "label")
+
+censusFeaturesLabelHotDF.show(5, false)
+
+/*      Partición en entrenamiento (66%) y prueba (34%)              */
+
+/*
+La partición es estratificada: con solo un 6% de instancias positivas, un
+randomSplit simple podría alterar la proporción de clases entre las particiones.
+sampleBy toma el 66% de cada clase por separado, manteniendo el desbalance
+original en ambos conjuntos. El test es el complementario (left_anti sobre el id).
+*/
+val conId = censusFeaturesLabelDF.withColumn("id", monotonically_increasing_id()).cache()
+
+val trainCensusDF = conId.stat.sampleBy("label", Map(0.0 -> 0.66, 1.0 -> 0.66), 0L)
+val testCensusDF = conId.join(trainCensusDF.select("id"), Seq("id"), "left_anti")
+
+// Comprobamos que la proporción de clases se mantiene en ambas particiones
+Seq(("train", trainCensusDF), ("test", testCensusDF), ("total", conId)).foreach { case (nombre, df) =>
+  val n = df.count()
+  val pos = df.filter(col("label") === 1.0).count()
+  println(f"$nombre%-6s n=$n%8d  positivos=$pos%7d (${pos * 100.0 / n}%.2f%%)")
+}
+
+/*
+Se guardan los conjuntos ya transformados para reutilizarlos en el entregable
+individual sin repetir todo el preprocesado.
+*/
+trainCensusDF.drop("id").write.mode("overwrite").parquet(PATH + "census_train.parquet")
+testCensusDF.drop("id").write.mode("overwrite").parquet(PATH + "census_test.parquet")
