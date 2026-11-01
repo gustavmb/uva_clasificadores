@@ -1,0 +1,46 @@
+census_train.parquet
+Columnas:
+  features: vector
+  label: double
+Componentes de features (17):
+    0  detailed_occupation_recode-num
+    1  education-num
+    2  detailed_industry_recode-num
+    3  class_of_worker-num
+    4  tax_filer_stat-num
+    5  detailed_household_summary_in_household-num
+    6  marital_stat-num
+    7  full_or_part_time_employment_stat-num
+    8  family_members_under_18-num
+    9  sex-num
+   10  veterans_benefits-num
+   11  weeks_worked_in_year
+   12  dividends_from_stocks
+   13  capital_gains
+   14  capital_losses
+   15  age
+   16  num_persons_worked_for_employer
+
+census_test.parquet
+Columnas:
+  features: vector
+  label: double
+Componentes de features (17):
+    0  detailed_occupation_recode-num
+    1  education-num
+    2  detailed_industry_recode-num
+    3  class_of_worker-num
+    4  tax_filer_stat-num
+    5  detailed_household_summary_in_household-num
+    6  marital_stat-num
+    7  full_or_part_time_employment_stat-num
+    8  family_members_under_18-num
+    9  sex-num
+   10  veterans_benefits-num
+   11  weeks_worked_in_year
+   12  dividends_from_stocks
+   13  capital_gains
+   14  capital_losses
+   15  age
+   16  num_persons_worked_for_employer
+

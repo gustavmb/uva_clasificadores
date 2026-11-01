@@ -2,7 +2,7 @@ import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{StructType, StructField, StringType}
 import org.apache.spark.ml.feature.VectorAssembler
-import org.apache.spark.ml.feature.{StringIndexer, OneHotEncoder}
+import org.apache.spark.ml.feature.StringIndexer
 import org.apache.spark.ml.linalg.Matrix
 import org.apache.spark.ml.stat.Correlation
 
@@ -301,83 +301,38 @@ val dropCols = Seq(
   "wage_per_hour",
   "year")
 
+/*      Partición en entrenamiento (66%) y prueba (34%)              */
+
 /*
-En el resto de columnas los "?" son pocos (~2-3%), así que no se eliminan las filas:
-se sustituyen por la moda (el valor más frecuente de cada columna, sin contar los "?").
-Borrar esas filas descartaría instancias que son válidas en todos los demás atributos.
+La partición se hace tras eliminar las columnas irrelevantes y antes de la limpieza.
+Cada partición recorre después todo el flujo (imputación, capado, Cramér's V,
+selección, indexado) por separado, con estadísticos calculados solo con sus propios datos.
+La partición es estratificada: con solo un 6% de instancias positivas, un
+randomSplit simple podría alterar la proporción de clases entre las particiones.
+sampleBy toma el 66% de cada clase por separado, manteniendo el desbalance
+original en ambos conjuntos. El test es el complementario (left_anti sobre el id).
 */
-val imputeCols = qCols.diff(dropCols)
+val baseDF = (rawCensusDF
+  .drop(dropCols: _*)
+  .withColumn("label", when(trim(col(classCol)) === "50000+.", 1.0).otherwise(0.0))
+  .withColumn("id", monotonically_increasing_id())
+  .cache())
 
-// Moda de cada columna a imputar, ignorando los propios "?"
-val modas: Map[String, String] = imputeCols.map { c =>
-  val moda = rawCensusDF
-    .select(trim(col(c)).as("valor"))
-    .filter(col("valor") =!= "?")
-    .groupBy("valor")
-    .count()
-    .orderBy(desc("count"))
-    .first()
-    .getAs[String]("valor")
-  c -> moda
-}.toMap
+val trainRawDF = baseDF.stat.sampleBy("label", Map(0.0 -> 0.66, 1.0 -> 0.66), 0L).cache()
+val testRawDF = baseDF.join(trainRawDF.select("id"), Seq("id"), "left_anti").cache()
 
-println("%-35s %s".format("Columna", "Moda imputada"))
-println("-" * 60)
-imputeCols.foreach(c => println("%-35s %s".format(c, modas(c))))
-
-val cleanDF = (imputeCols
-  .foldLeft(rawCensusDF.drop(dropCols: _*)) { (df, c) =>
-    df.withColumn(c, when(trim(col(c)) === "?", modas(c)).otherwise(trim(col(c))))
-  })
-
-println(s"\nColumnas reducidas tras eliminacion de columnas irrelevantes: ${rawCensusDF.columns.length} -> ${cleanDF.columns.length}")
-
-// Comprobación: ya no quedan "?" en las columnas imputadas
-println("\nComprobación de columnas imputadas. Valor '?' no presente")
-(cleanDF
-  .select(imputeCols.map(c => sum(when(col(c) === "?", 1).otherwise(0)).as(c)): _*)
-  .show(false))
-
-// Tratamiento de los valores atípicos: capado (winsorización)
-/*
-Los atípicos no son errores de captura, sino valores reales y poco frecuentes.
-No se eliminan las filas porque se concentran en la clase positiva, que ya es
-minoritaria (~6%): descartarlas quitaría justamente las instancias más informativas.
-En su lugar se capan al límite superior (q3 + 3*IQR), lo que conserva la instancia
-y su orden de magnitud, pero neutraliza el efecto de la cola sobre media y varianza.
-Los cuantiles se calculan sobre los valores > 0, porque son columnas cero-infladas
-y de lo contrario q1 y q3 serían ambos 0.
-age no se incluye: no presenta ningún valor atípico.
-*/
-println("\nValores Atipicos (Outliers): ")
-val capCols = Seq("capital_gains", "capital_losses", "dividends_from_stocks").diff(dropCols)
-
-val limites: Map[String, Double] = capCols.map { c =>
-  val q = numDF.filter(col(c) > 0).stat.approxQuantile(c, Array(0.25, 0.75), 0.001)
-  c -> (q(1) + 3 * (q(1) - q(0)))
-}.toMap
-
-// Las columnas capadas pasan a ser numéricas (double)
-val cappedDF = capCols.foldLeft(cleanDF) { (df, c) =>
-  val x = trim(col(c)).cast("double")
-  df.withColumn(c, when(x > limites(c), lit(limites(c))).otherwise(x))
+// Comprobamos que la proporción de clases se mantiene en ambas particiones
+Seq(("train", trainRawDF), ("test", testRawDF), ("total", baseDF)).foreach { case (nombre, df) =>
+  val n = df.count()
+  val pos = df.filter(col("label") === 1.0).count()
+  println(f"$nombre%-6s n=$n%8d  positivos=$pos%7d (${pos * 100.0 / n}%.2f%%)")
 }
 
-// Cuántos valores se han capado en cada columna
-(cappedDF
-  .select(capCols.map(c => sum(when(col(c) === limites(c), 1).otherwise(0)).as(c)): _*)
-  .show(false))
-
-println("\n Aplicando windsorizacion:")
-println("%-25s %12s".format("Columna", "Límite sup."))
-println("-" * 38)
-capCols.foreach(c => println("%-25s %12.1f".format(c, limites(c))))
-
-// Selección de atributos: asociación de cada nominal con la clase (Cramér's V)
 /*
-Pearson y Spearman no sirven para los atributos nominales. Para medirlos usamos
-Cramér's V, que normaliza el estadístico chi-cuadrado al intervalo [0, 1] y permite
-comparar atributos con distinto número de categorías:
+Cramér's V: asociación de cada nominal con la clase.
+Pearson y Spearman no sirven para los atributos nominales. Cramér's V normaliza el
+estadístico chi-cuadrado al intervalo [0, 1] y permite comparar atributos con distinto
+número de categorías:
   0.00-0.05  sin asociación      0.05-0.10  débil
   0.10-0.20  moderada            > 0.20     fuerte
 Se aplica la corrección de Yates cuando los grados de libertad son 1 (tablas 2x2).
@@ -410,32 +365,27 @@ def cramersV(data: DataFrame, x: String, y: String): Double = {
   cramersVCells(cells)
 }
 
-// Nominales que quedan tras la limpieza
-val nomColsClean = (cappedDF.columns
-  .filterNot(c => numCols.contains(c) || c == classCol)
-  .toSeq)
+/*
+En el resto de columnas los "?" son pocos (~2-3%), así que no se eliminan las filas:
+se sustituyen por la moda (el valor más frecuente de cada columna, sin contar los "?").
+Borrar esas filas descartaría instancias que son válidas en todos los demás atributos.
+*/
+val imputeCols = qCols.diff(dropCols)
 
-// Ranking de asociación con la clase, junto al número de categorías de cada atributo
-val cardinalidad = (cappedDF
-  .select(nomColsClean.map(c => countDistinct(trim(col(c))).as(c)): _*)
-  .first())
-
-val ranking = nomColsClean.map { c =>
-  (c, cardinalidad.getAs[Long](c), cramersV(cappedDF, c, classCol))
-}
-
-(ranking
-  .toDF("atributo", "n_categorias", "cramers_v")
-  .withColumn("cramers_v", round(col("cramers_v"), 3))
-  .withColumn("asociacion", when(col("cramers_v") >= 0.2, "fuerte")
-    .when(col("cramers_v") >= 0.1, "moderada")
-    .when(col("cramers_v") >= 0.05, "debil")
-    .otherwise("ninguna"))
-  .orderBy(desc("cramers_v"))
-  .show(nomColsClean.size, false))
+/*
+Los atípicos no son errores de captura, sino valores reales y poco frecuentes.
+No se eliminan las filas porque se concentran en la clase positiva, que ya es
+minoritaria (~6%): descartarlas quitaría justamente las instancias más informativas.
+En su lugar se capan al límite superior (q3 + 3*IQR), lo que conserva la instancia
+y su orden de magnitud, pero neutraliza el efecto de la cola sobre media y varianza.
+Los cuantiles se calculan sobre los valores > 0, porque son columnas cero-infladas
+y de lo contrario q1 y q3 serían ambos 0.
+age no se incluye: no presenta ningún valor atípico.
+*/
+val capCols = Seq("capital_gains", "capital_losses", "dividends_from_stocks").diff(dropCols)
 
 // Redundancia entre pares de nominales sospechosos (V alto = informacion duplicada)
-val paresRedundantes = (Seq(
+val paresSospechosos = Seq(
   ("detailed_industry_recode", "major_industry_code"),
   ("detailed_occupation_recode", "major_occupation_code"),
   ("detailed_household_and_family_stat", "detailed_household_summary_in_household"),
@@ -445,14 +395,6 @@ val paresRedundantes = (Seq(
   ("country_of_birth_father", "country_of_birth_mother"),
   ("country_of_birth_self", "citizenship"),
   ("state_of_previous_residence", "region_of_previous_residence"))
-  .filter { case (a, b) => nomColsClean.contains(a) && nomColsClean.contains(b) })
-
-(paresRedundantes
-  .map { case (a, b) => (a, b, cramersV(cappedDF, a, b)) }
-  .toDF("atributo_1", "atributo_2", "cramers_v")
-  .withColumn("cramers_v", round(col("cramers_v"), 3))
-  .orderBy(desc("cramers_v"))
-  .show(false))
 
 // Selección final de atributos
 /*
@@ -461,12 +403,14 @@ De los 42 atributos originales se conservan 17 + la clase. Los criterios han sid
 - nominales: Cramér's V con la clase (se conservan los de asociación >= 0.14)
 - redundancia: de cada par con V muy alto se conserva un solo atributo
 
+La lista es fija (decidida con el análisis sobre el conjunto completo); el Cramér's V
+de cada partición se calcula y se muestra para comprobar que la selección se sostiene.
+
 Nota sobre la cardinalidad: Cramér's V se infla cuando el atributo tiene muchas
 categorías, así que la ventaja de detailed_occupation_recode (47 cat., V=0.438)
 sobre major_occupation_code (15 cat., V=0.366) es en parte sesgo y no señal real.
 Como V entre ambos es 1.0 (el código detallado determina el agregado), se conserva
-el detallado para modelos basados en árboles; en un modelo lineal con one-hot
-encoding conviene sustituirlo por el agregado para no disparar la dimensionalidad.
+el detallado para modelos basados en árboles.
 */
 val selNomCols = Seq(
   "detailed_occupation_recode",              // V=0.438
@@ -494,17 +438,6 @@ val selNumCols = Seq(
   "age",                             // Spearman 0.16
   "num_persons_worked_for_employer") // Spearman 0.23
 
-val finalDF = cappedDF.select(
-  selNomCols.map(c => trim(col(c)).as(c)) ++
-  selNumCols.map(c => trim(col(c)).cast("double").as(c)) :+
-  when(trim(col(classCol)) === "50000+.", 1.0).otherwise(0.0).as("label"): _*)
-
-println(s"Atributos: ${rawCensusDF.columns.length} -> ${finalDF.columns.length} (incluida la clase)")
-finalDF.printSchema()
-finalDF.show(5, false)
-
-/*      Transformación a columnas features y label                  */
-
 /*
 Los 11 atributos nominales se pasan a índices numéricos con StringIndexer.
 Los 6 numéricos NO se indexan: ya son double y pasan directos al VectorAssembler.
@@ -515,94 +448,193 @@ val attributeColumns = selNomCols.toArray
 val outputColumns = attributeColumns.map(_ + "-num")
 
 /*
-setStringOrderType("alphabetDesc"): el índice depende solo del valor y no de su
-frecuencia, así que la asignación es la misma en cualquier partición.
-setHandleInvalid("keep"): algunas categorías son muy poco frecuentes (códigos de
-ocupación con unos pocos casos) y pueden aparecer en prueba sin haber aparecido en
-entrenamiento. Con "keep" reciben un índice reservado en lugar de provocar un error.
+Flujo completo aplicado a una partición de forma independiente. Devuelve
+el DataFrame con las columnas features y label.
 */
-val siColumns = (new StringIndexer()
-  .setInputCols(attributeColumns)
-  .setOutputCols(outputColumns)
-  .setStringOrderType("alphabetDesc")
-  .setHandleInvalid("keep"))
+var nValoresCapados = 0L
 
-val simColumns = siColumns.fit(finalDF)
+def procesar(nombre: String, rawDF: DataFrame): DataFrame = {
+  println(s"\n================ Partición $nombre ================")
 
-val censusDFnumeric = (simColumns
-  .transform(finalDF)
-  .drop(attributeColumns: _*))
+  // Limpieza: moda de cada columna a imputar, ignorando los propios "?"
+  val modas: Map[String, String] = imputeCols.map { c =>
+    val moda = rawDF
+      .select(trim(col(c)).as("valor"))
+      .filter(col("valor") =!= "?")
+      .groupBy("valor")
+      .count()
+      .orderBy(desc("count"))
+      .first()
+      .getAs[String]("valor")
+    c -> moda
+  }.toMap
 
-censusDFnumeric.show(5, false)
+  println("%-35s %s".format("Columna", "Moda imputada"))
+  println("-" * 60)
+  imputeCols.foreach(c => println("%-35s %s".format(c, modas(c))))
 
-/*
-Versión para árboles de decisión: los índices entran directamente en features.
-Los árboles de Spark tratan de forma nativa los atributos categóricos indexados y
-particionan por subconjuntos de categorías, lo que es más expresivo que una
-codificación 1 de K y evita multiplicar la dimensionalidad.
-*/
-val vaNum = (new VectorAssembler()
-  .setInputCols(outputColumns ++ selNumCols.toArray)
-  .setOutputCol("features"))
+  val cleanDF = imputeCols.foldLeft(rawDF) { (df, c) =>
+    df.withColumn(c, when(trim(col(c)) === "?", modas(c)).otherwise(trim(col(c))))
+  }
 
-val censusFeaturesLabelDF = (vaNum
-  .transform(censusDFnumeric)
-  .select("features", "label"))
+  println(s"\nColumnas tras eliminar las irrelevantes: ${cleanDF.columns.length - 2} (sin label ni id)")
 
-censusFeaturesLabelDF.show(5, false)
+  println("\nComprobación de columnas imputadas. Valor '?' no presente")
+  (cleanDF
+    .select(imputeCols.map(c => sum(when(col(c) === "?", 1).otherwise(0)).as(c)): _*)
+    .show(false))
 
-/*
-Versión para modelos lineales (regresión logística, SVM): con codificación 1 de K.
-Es necesaria porque un índice numérico impondría un orden falso entre categorías
-("Doctorate"=3 no vale el triple que "10th grade"=1).
-Con dropLast=true (por defecto), K categorías producen un vector de tamaño K-1:
-la última queda representada por el vector de ceros, evitando la colinealidad que
-introduciría una columna redundante.
-*/
-val hotOutputColumns = attributeColumns.map(_ + "-hot")
+  // Capado (winsorización) con los límites de esta partición
+  val limites: Map[String, Double] = capCols.map { c =>
+    val q = (rawDF
+      .select(trim(col(c)).cast("double").as(c))
+      .filter(col(c) > 0)
+      .stat.approxQuantile(c, Array(0.25, 0.75), 0.001))
+    c -> (q(1) + 3 * (q(1) - q(0)))
+  }.toMap
 
-val hotColumns = (new OneHotEncoder()
-  .setInputCols(outputColumns)
-  .setOutputCols(hotOutputColumns))
+  // Las columnas capadas pasan a ser numéricas (double)
+  val cappedDF = capCols.foldLeft(cleanDF) { (df, c) =>
+    val x = trim(col(c)).cast("double")
+    df.withColumn(c, when(x > limites(c), lit(limites(c))).otherwise(x))
+  }
 
-val censusDFhot = (hotColumns
-  .fit(censusDFnumeric)
-  .transform(censusDFnumeric)
-  .drop(outputColumns: _*))
+  println("\nValores atípicos capados por columna:")
+  val capados = (cappedDF
+    .select(capCols.map(c => sum(when(col(c) === limites(c), 1).otherwise(0)).as(c)): _*))
+  capados.show(false)
+  nValoresCapados += capCols.map(c => capados.first().getAs[Long](c)).sum
 
-val vaHot = (new VectorAssembler()
-  .setInputCols(hotOutputColumns ++ selNumCols.toArray)
-  .setOutputCol("features"))
+  println("Aplicando winsorización:")
+  println("%-25s %12s".format("Columna", "Límite sup."))
+  println("-" * 38)
+  capCols.foreach(c => println("%-25s %12.1f".format(c, limites(c))))
 
-val censusFeaturesLabelHotDF = (vaHot
-  .transform(censusDFhot)
-  .select("features", "label"))
+  // Cramér's V con la clase
+  val nomColsClean = (cappedDF.columns
+    .filterNot(c => numCols.contains(c) || Seq(classCol, "label", "id").contains(c))
+    .toSeq)
 
-censusFeaturesLabelHotDF.show(5, false)
+  val cardinalidad = (cappedDF
+    .select(nomColsClean.map(c => countDistinct(trim(col(c))).as(c)): _*)
+    .first())
 
-/*      Partición en entrenamiento (66%) y prueba (34%)              */
+  val ranking = nomColsClean.map { c =>
+    (c, cardinalidad.getAs[Long](c), cramersV(cappedDF, c, classCol))
+  }
 
-/*
-La partición es estratificada: con solo un 6% de instancias positivas, un
-randomSplit simple podría alterar la proporción de clases entre las particiones.
-sampleBy toma el 66% de cada clase por separado, manteniendo el desbalance
-original en ambos conjuntos. El test es el complementario (left_anti sobre el id).
-*/
-val conId = censusFeaturesLabelDF.withColumn("id", monotonically_increasing_id()).cache()
+  (ranking
+    .toDF("atributo", "n_categorias", "cramers_v")
+    .withColumn("cramers_v", round(col("cramers_v"), 3))
+    .withColumn("asociacion", when(col("cramers_v") >= 0.2, "fuerte")
+      .when(col("cramers_v") >= 0.1, "moderada")
+      .when(col("cramers_v") >= 0.05, "debil")
+      .otherwise("ninguna"))
+    .orderBy(desc("cramers_v"))
+    .show(nomColsClean.size, false))
 
-val trainCensusDF = conId.stat.sampleBy("label", Map(0.0 -> 0.66, 1.0 -> 0.66), 0L)
-val testCensusDF = conId.join(trainCensusDF.select("id"), Seq("id"), "left_anti")
+  val paresRedundantes = paresSospechosos
+    .filter { case (a, b) => nomColsClean.contains(a) && nomColsClean.contains(b) }
 
-// Comprobamos que la proporción de clases se mantiene en ambas particiones
-Seq(("train", trainCensusDF), ("test", testCensusDF), ("total", conId)).foreach { case (nombre, df) =>
-  val n = df.count()
-  val pos = df.filter(col("label") === 1.0).count()
-  println(f"$nombre%-6s n=$n%8d  positivos=$pos%7d (${pos * 100.0 / n}%.2f%%)")
+  (paresRedundantes
+    .map { case (a, b) => (a, b, cramersV(cappedDF, a, b)) }
+    .toDF("atributo_1", "atributo_2", "cramers_v")
+    .withColumn("cramers_v", round(col("cramers_v"), 3))
+    .orderBy(desc("cramers_v"))
+    .show(false))
+
+  // Selección de atributos
+  val finalDF = cappedDF.select(
+    selNomCols.map(c => trim(col(c)).as(c)) ++
+    selNumCols.map(c => trim(col(c)).cast("double").as(c)) :+
+    col("label"): _*)
+
+  println(s"Atributos: ${rawCensusDF.columns.length} -> ${finalDF.columns.length} (incluida la clase)")
+  finalDF.printSchema()
+  finalDF.show(5, false)
+
+  /*
+  setStringOrderType("alphabetDesc"): el índice depende solo del valor y no de su
+  frecuencia. setHandleInvalid("keep"): las categorías no vistas reciben un índice
+  reservado en lugar de provocar un error.
+  El indexador se ajusta con los datos de esta partición.
+  */
+  val indexed = (new StringIndexer()
+    .setInputCols(attributeColumns)
+    .setOutputCols(outputColumns)
+    .setStringOrderType("alphabetDesc")
+    .setHandleInvalid("keep")
+    .fit(finalDF)
+    .transform(finalDF)
+    .drop(attributeColumns: _*))
+
+  indexed.show(5, false)
+
+  /*
+  Versión para árboles de decisión: los índices entran directamente en features.
+  Los árboles de Spark tratan de forma nativa los atributos categóricos indexados y
+  particionan por subconjuntos de categorías, lo que es más expresivo que una
+  codificación 1 de K y evita multiplicar la dimensionalidad.
+  */
+  val treesDF = (new VectorAssembler()
+    .setInputCols(outputColumns ++ selNumCols.toArray)
+    .setOutputCol("features")
+    .transform(indexed)
+    .select("features", "label"))
+
+  treesDF.show(5, false)
+
+  treesDF
 }
 
+val trainCensusDF = procesar("train", trainRawDF)
+val testCensusDF = procesar("test", testRawDF)
+
+// NTAIE: instancias originales que no llegan a los conjuntos finales (train + test)
+val instanciasFinales = trainCensusDF.count() + testCensusDF.count()
+val NTAIE = totalRows - instanciasFinales
+println(s"\nInstancias originales: $totalRows | finales (train + test): $instanciasFinales")
+println(s"NTAIE (Numero total de ausentes/inconsistentes eliminados) = $NTAIE")
+println(s"  (ausentes '?' imputados con la moda, no eliminados; vacías: $nEmpty, inválidas: $nInvalid, duplicadas conservadas: $nDup)")
+
+// NTOE: los atípicos no se eliminan, se capan; no se pierde ninguna instancia por este motivo
+val NTOE = 0L
+println(s"NTOE (Numero total de outliers eliminados) = $NTOE")
+println(s"  (valores atípicos capados al límite superior, no eliminados: $nValoresCapados)")
+
 /*
-Se guardan los conjuntos ya transformados para reutilizarlos en el entregable
-individual sin repetir todo el preprocesado.
+Al final de todo el flujo se guardan los conjuntos ya transformados para reutilizarlos
+en el entregable individual sin repetir todo el preprocesado.
 */
-trainCensusDF.drop("id").write.mode("overwrite").parquet(PATH + "census_train.parquet")
-testCensusDF.drop("id").write.mode("overwrite").parquet(PATH + "census_test.parquet")
+trainCensusDF.write.mode("overwrite").parquet(PATH + "census_train.parquet")
+testCensusDF.write.mode("overwrite").parquet(PATH + "census_test.parquet")
+
+/*
+Archivo con el schema de los parquet: columnas reales (features, label) y el nombre
+de cada componente del vector features, tomado de los metadatos del VectorAssembler.
+*/
+import org.apache.spark.ml.attribute.AttributeGroup
+import java.nio.file.{Files, Paths}
+
+def describirSchema(archivo: String, df: DataFrame): String = {
+  val nombres = (AttributeGroup.fromStructField(df.schema("features")).attributes
+    .map(_.map(_.name.getOrElse("?")).toSeq)
+    .getOrElse(Seq.empty))
+  val columnas = df.schema.fields.map(f => s"  ${f.name}: ${f.dataType.simpleString}").mkString("\n")
+  val componentes = nombres.zipWithIndex.map { case (n, i) => f"  $i%3d  $n" }.mkString("\n")
+  s"""$archivo
+Columnas:
+$columnas
+Componentes de features (${nombres.size}):
+$componentes
+"""
+}
+
+val schemaTxt = (Seq(
+  ("census_train.parquet", trainCensusDF),
+  ("census_test.parquet", testCensusDF))
+  .map { case (f, df) => describirSchema(f, df) }
+  .mkString("\n"))
+
+Files.write(Paths.get(PATH + "census_schema.txt"), schemaTxt.getBytes("UTF-8"))
+println(schemaTxt)
