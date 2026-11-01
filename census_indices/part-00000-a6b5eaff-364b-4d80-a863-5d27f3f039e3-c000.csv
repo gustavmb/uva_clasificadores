@@ -1,0 +1,165 @@
+atributo,columna_num,indice,valor_original
+detailed_occupation_recode,detailed_occupation_recode-num,0,9
+detailed_occupation_recode,detailed_occupation_recode-num,1,8
+detailed_occupation_recode,detailed_occupation_recode-num,2,7
+detailed_occupation_recode,detailed_occupation_recode-num,3,6
+detailed_occupation_recode,detailed_occupation_recode-num,4,5
+detailed_occupation_recode,detailed_occupation_recode-num,5,46
+detailed_occupation_recode,detailed_occupation_recode-num,6,45
+detailed_occupation_recode,detailed_occupation_recode-num,7,44
+detailed_occupation_recode,detailed_occupation_recode-num,8,43
+detailed_occupation_recode,detailed_occupation_recode-num,9,42
+detailed_occupation_recode,detailed_occupation_recode-num,10,41
+detailed_occupation_recode,detailed_occupation_recode-num,11,40
+detailed_occupation_recode,detailed_occupation_recode-num,12,4
+detailed_occupation_recode,detailed_occupation_recode-num,13,39
+detailed_occupation_recode,detailed_occupation_recode-num,14,38
+detailed_occupation_recode,detailed_occupation_recode-num,15,37
+detailed_occupation_recode,detailed_occupation_recode-num,16,36
+detailed_occupation_recode,detailed_occupation_recode-num,17,35
+detailed_occupation_recode,detailed_occupation_recode-num,18,34
+detailed_occupation_recode,detailed_occupation_recode-num,19,33
+detailed_occupation_recode,detailed_occupation_recode-num,20,32
+detailed_occupation_recode,detailed_occupation_recode-num,21,31
+detailed_occupation_recode,detailed_occupation_recode-num,22,30
+detailed_occupation_recode,detailed_occupation_recode-num,23,3
+detailed_occupation_recode,detailed_occupation_recode-num,24,29
+detailed_occupation_recode,detailed_occupation_recode-num,25,28
+detailed_occupation_recode,detailed_occupation_recode-num,26,27
+detailed_occupation_recode,detailed_occupation_recode-num,27,26
+detailed_occupation_recode,detailed_occupation_recode-num,28,25
+detailed_occupation_recode,detailed_occupation_recode-num,29,24
+detailed_occupation_recode,detailed_occupation_recode-num,30,23
+detailed_occupation_recode,detailed_occupation_recode-num,31,22
+detailed_occupation_recode,detailed_occupation_recode-num,32,21
+detailed_occupation_recode,detailed_occupation_recode-num,33,20
+detailed_occupation_recode,detailed_occupation_recode-num,34,2
+detailed_occupation_recode,detailed_occupation_recode-num,35,19
+detailed_occupation_recode,detailed_occupation_recode-num,36,18
+detailed_occupation_recode,detailed_occupation_recode-num,37,17
+detailed_occupation_recode,detailed_occupation_recode-num,38,16
+detailed_occupation_recode,detailed_occupation_recode-num,39,15
+detailed_occupation_recode,detailed_occupation_recode-num,40,14
+detailed_occupation_recode,detailed_occupation_recode-num,41,13
+detailed_occupation_recode,detailed_occupation_recode-num,42,12
+detailed_occupation_recode,detailed_occupation_recode-num,43,11
+detailed_occupation_recode,detailed_occupation_recode-num,44,10
+detailed_occupation_recode,detailed_occupation_recode-num,45,1
+detailed_occupation_recode,detailed_occupation_recode-num,46,0
+education,education-num,0,Some college but no degree
+education,education-num,1,Prof school degree (MD DDS DVM LLB JD)
+education,education-num,2,Masters degree(MA MS MEng MEd MSW MBA)
+education,education-num,3,Less than 1st grade
+education,education-num,4,High school graduate
+education,education-num,5,Doctorate degree(PhD EdD)
+education,education-num,6,Children
+education,education-num,7,Bachelors degree(BA AB BS)
+education,education-num,8,Associates degree-occup /vocational
+education,education-num,9,Associates degree-academic program
+education,education-num,10,9th grade
+education,education-num,11,7th and 8th grade
+education,education-num,12,5th or 6th grade
+education,education-num,13,1st 2nd 3rd or 4th grade
+education,education-num,14,12th grade no diploma
+education,education-num,15,11th grade
+education,education-num,16,10th grade
+detailed_industry_recode,detailed_industry_recode-num,0,9
+detailed_industry_recode,detailed_industry_recode-num,1,8
+detailed_industry_recode,detailed_industry_recode-num,2,7
+detailed_industry_recode,detailed_industry_recode-num,3,6
+detailed_industry_recode,detailed_industry_recode-num,4,51
+detailed_industry_recode,detailed_industry_recode-num,5,50
+detailed_industry_recode,detailed_industry_recode-num,6,5
+detailed_industry_recode,detailed_industry_recode-num,7,49
+detailed_industry_recode,detailed_industry_recode-num,8,48
+detailed_industry_recode,detailed_industry_recode-num,9,47
+detailed_industry_recode,detailed_industry_recode-num,10,46
+detailed_industry_recode,detailed_industry_recode-num,11,45
+detailed_industry_recode,detailed_industry_recode-num,12,44
+detailed_industry_recode,detailed_industry_recode-num,13,43
+detailed_industry_recode,detailed_industry_recode-num,14,42
+detailed_industry_recode,detailed_industry_recode-num,15,41
+detailed_industry_recode,detailed_industry_recode-num,16,40
+detailed_industry_recode,detailed_industry_recode-num,17,4
+detailed_industry_recode,detailed_industry_recode-num,18,39
+detailed_industry_recode,detailed_industry_recode-num,19,38
+detailed_industry_recode,detailed_industry_recode-num,20,37
+detailed_industry_recode,detailed_industry_recode-num,21,36
+detailed_industry_recode,detailed_industry_recode-num,22,35
+detailed_industry_recode,detailed_industry_recode-num,23,34
+detailed_industry_recode,detailed_industry_recode-num,24,33
+detailed_industry_recode,detailed_industry_recode-num,25,32
+detailed_industry_recode,detailed_industry_recode-num,26,31
+detailed_industry_recode,detailed_industry_recode-num,27,30
+detailed_industry_recode,detailed_industry_recode-num,28,3
+detailed_industry_recode,detailed_industry_recode-num,29,29
+detailed_industry_recode,detailed_industry_recode-num,30,28
+detailed_industry_recode,detailed_industry_recode-num,31,27
+detailed_industry_recode,detailed_industry_recode-num,32,26
+detailed_industry_recode,detailed_industry_recode-num,33,25
+detailed_industry_recode,detailed_industry_recode-num,34,24
+detailed_industry_recode,detailed_industry_recode-num,35,23
+detailed_industry_recode,detailed_industry_recode-num,36,22
+detailed_industry_recode,detailed_industry_recode-num,37,21
+detailed_industry_recode,detailed_industry_recode-num,38,20
+detailed_industry_recode,detailed_industry_recode-num,39,2
+detailed_industry_recode,detailed_industry_recode-num,40,19
+detailed_industry_recode,detailed_industry_recode-num,41,18
+detailed_industry_recode,detailed_industry_recode-num,42,17
+detailed_industry_recode,detailed_industry_recode-num,43,16
+detailed_industry_recode,detailed_industry_recode-num,44,15
+detailed_industry_recode,detailed_industry_recode-num,45,14
+detailed_industry_recode,detailed_industry_recode-num,46,13
+detailed_industry_recode,detailed_industry_recode-num,47,12
+detailed_industry_recode,detailed_industry_recode-num,48,11
+detailed_industry_recode,detailed_industry_recode-num,49,10
+detailed_industry_recode,detailed_industry_recode-num,50,1
+detailed_industry_recode,detailed_industry_recode-num,51,0
+class_of_worker,class_of_worker-num,0,Without pay
+class_of_worker,class_of_worker-num,1,State government
+class_of_worker,class_of_worker-num,2,Self-employed-not incorporated
+class_of_worker,class_of_worker-num,3,Self-employed-incorporated
+class_of_worker,class_of_worker-num,4,Private
+class_of_worker,class_of_worker-num,5,Not in universe
+class_of_worker,class_of_worker-num,6,Never worked
+class_of_worker,class_of_worker-num,7,Local government
+class_of_worker,class_of_worker-num,8,Federal government
+tax_filer_stat,tax_filer_stat-num,0,Single
+tax_filer_stat,tax_filer_stat-num,1,Nonfiler
+tax_filer_stat,tax_filer_stat-num,2,Joint one under 65 & one 65+
+tax_filer_stat,tax_filer_stat-num,3,Joint both under 65
+tax_filer_stat,tax_filer_stat-num,4,Joint both 65+
+tax_filer_stat,tax_filer_stat-num,5,Head of household
+detailed_household_summary_in_household,detailed_household_summary_in_household-num,0,Spouse of householder
+detailed_household_summary_in_household,detailed_household_summary_in_household-num,1,Other relative of householder
+detailed_household_summary_in_household,detailed_household_summary_in_household-num,2,Nonrelative of householder
+detailed_household_summary_in_household,detailed_household_summary_in_household-num,3,Householder
+detailed_household_summary_in_household,detailed_household_summary_in_household-num,4,Group Quarters- Secondary individual
+detailed_household_summary_in_household,detailed_household_summary_in_household-num,5,Child under 18 never married
+detailed_household_summary_in_household,detailed_household_summary_in_household-num,6,Child under 18 ever married
+detailed_household_summary_in_household,detailed_household_summary_in_household-num,7,Child 18 or older
+marital_stat,marital_stat-num,0,Widowed
+marital_stat,marital_stat-num,1,Separated
+marital_stat,marital_stat-num,2,Never married
+marital_stat,marital_stat-num,3,Married-spouse absent
+marital_stat,marital_stat-num,4,Married-civilian spouse present
+marital_stat,marital_stat-num,5,Married-A F spouse present
+marital_stat,marital_stat-num,6,Divorced
+full_or_part_time_employment_stat,full_or_part_time_employment_stat-num,0,Unemployed part- time
+full_or_part_time_employment_stat,full_or_part_time_employment_stat-num,1,Unemployed full-time
+full_or_part_time_employment_stat,full_or_part_time_employment_stat-num,2,PT for non-econ reasons usually FT
+full_or_part_time_employment_stat,full_or_part_time_employment_stat-num,3,PT for econ reasons usually PT
+full_or_part_time_employment_stat,full_or_part_time_employment_stat-num,4,PT for econ reasons usually FT
+full_or_part_time_employment_stat,full_or_part_time_employment_stat-num,5,Not in labor force
+full_or_part_time_employment_stat,full_or_part_time_employment_stat-num,6,Full-time schedules
+full_or_part_time_employment_stat,full_or_part_time_employment_stat-num,7,Children or Armed Forces
+family_members_under_18,family_members_under_18-num,0,Not in universe
+family_members_under_18,family_members_under_18-num,1,Neither parent present
+family_members_under_18,family_members_under_18-num,2,Mother only present
+family_members_under_18,family_members_under_18-num,3,Father only present
+family_members_under_18,family_members_under_18-num,4,Both parents present
+sex,sex-num,0,Male
+sex,sex-num,1,Female
+veterans_benefits,veterans_benefits-num,0,2
+veterans_benefits,veterans_benefits-num,1,1
+veterans_benefits,veterans_benefits-num,2,0

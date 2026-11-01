@@ -3,6 +3,7 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{StructType, StructField, StringType}
 import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.ml.feature.StringIndexer
+import org.apache.spark.ml.feature.StringIndexerModel
 import org.apache.spark.ml.linalg.Matrix
 import org.apache.spark.ml.stat.Correlation
 
@@ -62,10 +63,10 @@ val censusSchema = StructType(Array(
 ))
 
 // Leemos el DataFrame con la estructura definida
-val rawCensusDF = spark.read.format("csv").schema(censusSchema).load(PATH + DATA)
+val fullCensusDF = spark.read.format("csv").schema(censusSchema).load(PATH + DATA)
 
 // Muestra las primeras 5 columnas y 5 lineas
-rawCensusDF.select(rawCensusDF.columns.take(5).map(col): _*).show(5)
+fullCensusDF.select(fullCensusDF.columns.take(5).map(col): _*).show(5)
 
 // Lista de atributos
 val classCol = "income"
@@ -77,13 +78,44 @@ val numCols = contCols ++ discCols
 val codeCols = Seq("detailed_industry_recode", "detailed_occupation_recode",
   "own_business_or_self_employed", "veterans_benefits", "year")
 
-// Cantidad de classes positivas y negativas
-val totalRows = rawCensusDF.count()
-(rawCensusDF
+/*      Partición en entrenamiento (66%) y prueba (34%)              */
+
+/*
+La partición se hace justo después de cargar los datos y ANTES de cualquier análisis.
+Toda la exploración, el análisis de asociación (Pearson, Spearman, Cramér's V) y las
+decisiones de limpieza y selección de atributos se hacen únicamente con train. El test
+no se usa para construir el modelo ni para tomar decisiones: solo recibe después las
+transformaciones aprendidas en train.
+La partición es estratificada: con solo un 6% de instancias positivas, un
+randomSplit simple podría alterar la proporción de clases entre las particiones.
+sampleBy toma el 66% de cada clase por separado, manteniendo el desbalance
+original en ambos conjuntos. El test es el complementario (left_anti sobre el id).
+*/
+val baseDF = (fullCensusDF
+  .withColumn("label", when(trim(col("income")) === "50000+.", 1.0).otherwise(0.0))
+  .withColumn("id", monotonically_increasing_id())
+  .cache())
+
+val trainRawDF = baseDF.stat.sampleBy("label", Map(0.0 -> 0.66, 1.0 -> 0.66), 0L).cache()
+val testRawDF = baseDF.join(trainRawDF.select("id"), Seq("id"), "left_anti").cache()
+
+// Comprobamos que la proporción de clases se mantiene en ambas particiones
+Seq(("train", trainRawDF), ("test", testRawDF), ("total", baseDF)).foreach { case (nombre, df) =>
+  val n = df.count()
+  val pos = df.filter(col("label") === 1.0).count()
+  println(f"$nombre%-6s n=$n%8d  positivos=$pos%7d (${pos * 100.0 / n}%.2f%%)")
+}
+
+// Datos de train con las columnas originales: base de toda la exploración
+val trainExpDF = trainRawDF.drop("id", "label")
+val nTrain = trainExpDF.count()
+
+// Cantidad de classes positivas y negativas (train)
+(trainExpDF
   .groupBy(trim(col(classCol)).as(classCol))
   .count()
   .withColumn("label", when(col(classCol) === "50000+.", "positive").otherwise("negative"))
-  .withColumn("percentage", round(col("count") * 100.0 / totalRows, 2))
+  .withColumn("percentage", round(col("count") * 100.0 / nTrain, 2))
   .orderBy(desc("count"))
   .show())
 
@@ -93,11 +125,11 @@ Los verdaderos nulos son los "?" que hay en las columnas mencionadas abajo (qCol
 */
 
 // Cantidad de NA's en hispanic_origin
-val naHispanic: Long = (rawCensusDF
+val naHispanic: Long = (trainExpDF
   .filter(col("hispanic_origin").isNull || trim(col("hispanic_origin")) === "NA")
   .count())
 
-println(s"NA's en hispanic_origin: $naHispanic de $totalRows (${math.round(naHispanic * 10000.0 / totalRows) / 100.0}%)")
+println(s"NA's en hispanic_origin: $naHispanic de $nTrain (${math.round(naHispanic * 10000.0 / nTrain) / 100.0}%)")
 
 // Cantidad de "?" por columnas (solo en las columnas que tienen "?")
 val qCols = Seq(
@@ -111,14 +143,14 @@ val qCols = Seq(
   "country_of_birth_self"
 )
 
-val qCounts = rawCensusDF.select(qCols.map(c => sum(when(trim(col(c)) === "?", 1).otherwise(0)).as(c)): _*).first()
+val qCounts = trainExpDF.select(qCols.map(c => sum(when(trim(col(c)) === "?", 1).otherwise(0)).as(c)): _*).first()
 
 println("%-35s %11s".format("Nombre de Columna", "Incidencias"))
 println("-" * 47)
 qCols.foreach(c => println(f"$c%-35s ${qCounts.getAs[Long](c)}%11d"))
 
 // La distribución de los atributos: 6 continuos, 2 discretos, 0 booleanos y 33 nominales
-val nNominales = rawCensusDF.columns.length - 1 - numCols.size // sin la clase ni las numéricas
+val nNominales = trainExpDF.columns.length - 1 - numCols.size // sin la clase ni las numéricas
 
 (Seq(("continuos", contCols.size), ("discretos", discCols.size), ("booleanos", 0), ("nominales", nNominales))
   .toDF("tipo", "count")
@@ -126,11 +158,11 @@ val nNominales = rawCensusDF.columns.length - 1 - numCols.size // sin la clase n
 
 // Instancias vacías, inválidas y duplicadas
 // vacía: todas las columnas son null (el CSV lee los campos vacíos como null)
-val nEmpty = totalRows - rawCensusDF.na.drop("all").count()
+val nEmpty = nTrain - trainExpDF.na.drop("all").count()
 // inválida: la clase no es "- 50000." ni "50000+."
-val nInvalid = rawCensusDF.filter(!trim(col(classCol)).isin("- 50000.", "50000+.")).count()
+val nInvalid = trainExpDF.filter(!trim(col(classCol)).isin("- 50000.", "50000+.")).count()
 // duplicada: fila repetida (total - distintas)
-val nDup = totalRows - rawCensusDF.distinct().count()
+val nDup = nTrain - trainExpDF.distinct().count()
 
 /*
 Aunque haya varias columnas duplicadas, hemos decidido no eliminar, porque:
@@ -140,7 +172,7 @@ mismos valores en todas las columnas.
 
 (Seq(("vacías", nEmpty), ("inválidas", nInvalid), ("duplicadas", nDup))
   .toDF("instancias", "count")
-  .withColumn("percentage", round(col("count") * 100.0 / totalRows, 2))
+  .withColumn("percentage", round(col("count") * 100.0 / nTrain, 2))
   .show())
 
 // Estadísticas de los atributos Numéricos (mín., máx., media, desviación, distribución, valores atípicos)
@@ -150,7 +182,7 @@ Además de count, mean, std, min, quartis y max, se añaden:
 - %zeros   = porcentaje de valores iguales a 0
 - n_unicos = cuántos valores distintos hay
 */
-val numDF = rawCensusDF.select(numCols.map(c => trim(col(c)).cast("double").as(c)): _*)
+val numDF = trainExpDF.select(numCols.map(c => trim(col(c)).cast("double").as(c)): _*)
 
 // Una fila por atributo, con las estadísticas como columnas
 val statsDF = numCols.map { c =>
@@ -175,10 +207,10 @@ val statsDF = numCols.map { c =>
   .show(false))
 
 // Estadísticas de los atributos nominales (valores posibles, moda, frecuencia)
-val nomCols = rawCensusDF.columns.filterNot(c => numCols.contains(c) || c == classCol).toSeq
+val nomCols = trainExpDF.columns.filterNot(c => numCols.contains(c) || c == classCol).toSeq
 
 val nomStats = nomCols.map { c =>
-  rawCensusDF
+  trainExpDF
     .groupBy(trim(col(c)).as("valor"))
     .count()
     .agg(lit(c).as("atributo"), count("*").as("valores_posibles"), max(struct(col("count"), col("valor"))).as("m"))
@@ -190,7 +222,7 @@ val nomStats = nomCols.map { c =>
 
 // Ausentes (?) y “Not in universe”
 val ausentes = nomCols.map { c =>
-  rawCensusDF.agg(
+  trainExpDF.agg(
     lit(c).as("atributo"),
     sum(when(trim(col(c)) === "Not in universe", 1).otherwise(0)).as("not_in_universe"),
     sum(when(trim(col(c)) === "?", 1).otherwise(0)).as("interrogacion"))
@@ -200,8 +232,8 @@ val ausentes = nomCols.map { c =>
 */
 (ausentes
   .filter(col("not_in_universe") > 0 || col("interrogacion") > 0)
-  .withColumn("not_in_universe_%", round(col("not_in_universe") * 100.0 / totalRows, 2))
-  .withColumn("interrogacion_%", round(col("interrogacion") * 100.0 / totalRows, 2))
+  .withColumn("not_in_universe_%", round(col("not_in_universe") * 100.0 / nTrain, 2))
+  .withColumn("interrogacion_%", round(col("interrogacion") * 100.0 / nTrain, 2))
   .select("atributo", "not_in_universe", "not_in_universe_%", "interrogacion", "interrogacion_%")
   .orderBy(desc("interrogacion"))
   .show(nomCols.size, false))
@@ -223,7 +255,7 @@ val outliers = outCols.map { c =>
 }.reduce(_ union _)
 
 (outliers
-  .withColumn("atipicos_%", round(col("n_atipicos") * 100.0 / totalRows, 2))
+  .withColumn("atipicos_%", round(col("n_atipicos") * 100.0 / nTrain, 2))
   .show(false))
 
 
@@ -237,7 +269,7 @@ correlación de cada atributo numérico con la variable objetivo.
 */
 val corrCols = numCols :+ "income_bin"
 
-val corrInputDF = (rawCensusDF
+val corrInputDF = (trainExpDF
   .select(numCols.map(c => trim(col(c)).cast("double").as(c)) :+
     when(trim(col(classCol)) === "50000+.", 1.0).otherwise(0.0).as("income_bin"): _*)
   .na.drop(corrCols))
@@ -301,32 +333,9 @@ val dropCols = Seq(
   "wage_per_hour",
   "year")
 
-/*      Partición en entrenamiento (66%) y prueba (34%)              */
-
-/*
-La partición se hace tras eliminar las columnas irrelevantes y antes de la limpieza.
-Cada partición recorre después todo el flujo (imputación, capado, Cramér's V,
-selección, indexado) por separado, con estadísticos calculados solo con sus propios datos.
-La partición es estratificada: con solo un 6% de instancias positivas, un
-randomSplit simple podría alterar la proporción de clases entre las particiones.
-sampleBy toma el 66% de cada clase por separado, manteniendo el desbalance
-original en ambos conjuntos. El test es el complementario (left_anti sobre el id).
-*/
-val baseDF = (rawCensusDF
-  .drop(dropCols: _*)
-  .withColumn("label", when(trim(col(classCol)) === "50000+.", 1.0).otherwise(0.0))
-  .withColumn("id", monotonically_increasing_id())
-  .cache())
-
-val trainRawDF = baseDF.stat.sampleBy("label", Map(0.0 -> 0.66, 1.0 -> 0.66), 0L).cache()
-val testRawDF = baseDF.join(trainRawDF.select("id"), Seq("id"), "left_anti").cache()
-
-// Comprobamos que la proporción de clases se mantiene en ambas particiones
-Seq(("train", trainRawDF), ("test", testRawDF), ("total", baseDF)).foreach { case (nombre, df) =>
-  val n = df.count()
-  val pos = df.filter(col("label") === 1.0).count()
-  println(f"$nombre%-6s n=$n%8d  positivos=$pos%7d (${pos * 100.0 / n}%.2f%%)")
-}
+// Train y test sin las columnas eliminadas (la misma lista, decidida con train, para ambos)
+val trainDF = trainRawDF.drop(dropCols: _*)
+val testDF = testRawDF.drop(dropCols: _*)
 
 /*
 Cramér's V: asociación de cada nominal con la clase.
@@ -403,8 +412,9 @@ De los 42 atributos originales se conservan 17 + la clase. Los criterios han sid
 - nominales: Cramér's V con la clase (se conservan los de asociación >= 0.14)
 - redundancia: de cada par con V muy alto se conserva un solo atributo
 
-La lista es fija (decidida con el análisis sobre el conjunto completo); el Cramér's V
-de cada partición se calcula y se muestra para comprobar que la selección se sostiene.
+La lista es fija y se decidió con el análisis de train (Pearson, Spearman y Cramér's V
+calculados solo sobre train). Se aplica tal cual a test; el Cramér's V se vuelve a mostrar
+sobre train tras la limpieza para comprobar que la selección se sostiene.
 
 Nota sobre la cardinalidad: Cramér's V se infla cuando el atributo tiene muchas
 categorías, así que la ventaja de detailed_occupation_recode (47 cat., V=0.438)
@@ -448,17 +458,19 @@ val attributeColumns = selNomCols.toArray
 val outputColumns = attributeColumns.map(_ + "-num")
 
 /*
-Flujo completo aplicado a una partición de forma independiente. Devuelve
-el DataFrame con las columnas features y label.
+Todo el preprocesado se ajusta ÚNICAMENTE con train: de él se obtienen las modas de
+imputación, los límites de capado y el StringIndexer (además del análisis de Cramér's V).
+Test no calcula ningún estadístico propio: recibe exactamente las mismas transformaciones
+aprendidas en train, evitando fuga de información y garantizando que un mismo valor
+tenga el mismo índice en ambos conjuntos.
 */
 var nValoresCapados = 0L
 
-def procesar(nombre: String, rawDF: DataFrame): DataFrame = {
-  println(s"\n================ Partición $nombre ================")
-
-  // Limpieza: moda de cada columna a imputar, ignorando los propios "?"
+// Aprendido en train: moda de cada columna a imputar (ignorando los propios "?") y
+// límite superior de capado de cada columna
+def ajustarParametros(trainDF: DataFrame): (Map[String, String], Map[String, Double]) = {
   val modas: Map[String, String] = imputeCols.map { c =>
-    val moda = rawDF
+    val moda = trainDF
       .select(trim(col(c)).as("valor"))
       .filter(col("valor") =!= "?")
       .groupBy("valor")
@@ -469,9 +481,30 @@ def procesar(nombre: String, rawDF: DataFrame): DataFrame = {
     c -> moda
   }.toMap
 
-  println("%-35s %s".format("Columna", "Moda imputada"))
+  println("%-35s %s".format("Columna", "Moda imputada (train)"))
   println("-" * 60)
   imputeCols.foreach(c => println("%-35s %s".format(c, modas(c))))
+
+  val limites: Map[String, Double] = capCols.map { c =>
+    val q = (trainDF
+      .select(trim(col(c)).cast("double").as(c))
+      .filter(col(c) > 0)
+      .stat.approxQuantile(c, Array(0.25, 0.75), 0.001))
+    c -> (q(1) + 3 * (q(1) - q(0)))
+  }.toMap
+
+  println("\nLímites de capado (winsorización, train):")
+  println("%-25s %12s".format("Columna", "Límite sup."))
+  println("-" * 38)
+  capCols.foreach(c => println("%-25s %12.1f".format(c, limites(c))))
+
+  (modas, limites)
+}
+
+// Imputación y capado con los parámetros de train (igual para train y para test)
+def limpiar(nombre: String, rawDF: DataFrame, modas: Map[String, String],
+    limites: Map[String, Double]): DataFrame = {
+  println(s"\n================ Limpieza: $nombre ================")
 
   val cleanDF = imputeCols.foldLeft(rawDF) { (df, c) =>
     df.withColumn(c, when(trim(col(c)) === "?", modas(c)).otherwise(trim(col(c))))
@@ -483,15 +516,6 @@ def procesar(nombre: String, rawDF: DataFrame): DataFrame = {
   (cleanDF
     .select(imputeCols.map(c => sum(when(col(c) === "?", 1).otherwise(0)).as(c)): _*)
     .show(false))
-
-  // Capado (winsorización) con los límites de esta partición
-  val limites: Map[String, Double] = capCols.map { c =>
-    val q = (rawDF
-      .select(trim(col(c)).cast("double").as(c))
-      .filter(col(c) > 0)
-      .stat.approxQuantile(c, Array(0.25, 0.75), 0.001))
-    c -> (q(1) + 3 * (q(1) - q(0)))
-  }.toMap
 
   // Las columnas capadas pasan a ser numéricas (double)
   val cappedDF = capCols.foldLeft(cleanDF) { (df, c) =>
@@ -505,11 +529,11 @@ def procesar(nombre: String, rawDF: DataFrame): DataFrame = {
   capados.show(false)
   nValoresCapados += capCols.map(c => capados.first().getAs[Long](c)).sum
 
-  println("Aplicando winsorización:")
-  println("%-25s %12s".format("Columna", "Límite sup."))
-  println("-" * 38)
-  capCols.foreach(c => println("%-25s %12.1f".format(c, limites(c))))
+  cappedDF
+}
 
+// Análisis de asociación (Cramér's V): solo sobre train
+def analizarCramer(cappedDF: DataFrame): Unit = {
   // Cramér's V con la clase
   val nomColsClean = (cappedDF.columns
     .filterNot(c => numCols.contains(c) || Seq(classCol, "label", "id").contains(c))
@@ -542,31 +566,51 @@ def procesar(nombre: String, rawDF: DataFrame): DataFrame = {
     .withColumn("cramers_v", round(col("cramers_v"), 3))
     .orderBy(desc("cramers_v"))
     .show(false))
+}
 
-  // Selección de atributos
+// Selección de atributos (misma lista fija para train y test)
+def seleccionar(cappedDF: DataFrame): DataFrame = {
   val finalDF = cappedDF.select(
     selNomCols.map(c => trim(col(c)).as(c)) ++
     selNumCols.map(c => trim(col(c)).cast("double").as(c)) :+
     col("label"): _*)
 
-  println(s"Atributos: ${rawCensusDF.columns.length} -> ${finalDF.columns.length} (incluida la clase)")
+  println(s"Atributos: ${fullCensusDF.columns.length} -> ${finalDF.columns.length} (incluida la clase)")
   finalDF.printSchema()
   finalDF.show(5, false)
+  finalDF
+}
 
-  /*
-  setStringOrderType("alphabetDesc"): el índice depende solo del valor y no de su
-  frecuencia. setHandleInvalid("keep"): las categorías no vistas reciben un índice
-  reservado en lugar de provocar un error.
-  El indexador se ajusta con los datos de esta partición.
-  */
-  val indexed = (new StringIndexer()
+/*
+setStringOrderType("alphabetDesc"): el índice depende solo del valor y no de su
+frecuencia. setHandleInvalid("keep"): las categorías no vistas reciben un índice
+reservado en lugar de provocar un error.
+El indexador se ajusta SOLO con train; el mismo modelo se aplica a test, así un valor
+tiene el mismo índice en ambos conjuntos y una categoría que solo aparezca en test
+recibe el índice reservado.
+*/
+def ajustarIndexer(trainFinalDF: DataFrame): StringIndexerModel = {
+  val indexerModel = (new StringIndexer()
     .setInputCols(attributeColumns)
     .setOutputCols(outputColumns)
     .setStringOrderType("alphabetDesc")
     .setHandleInvalid("keep")
-    .fit(finalDF)
-    .transform(finalDF)
-    .drop(attributeColumns: _*))
+    .fit(trainFinalDF))
+
+  // Mapa valor original -> índice (posición en labelsArray; el índice = nº de etiquetas es "desconocido")
+  val mapaIndices = attributeColumns.zip(outputColumns).zip(indexerModel.labelsArray).flatMap {
+    case ((orig, num), labels) =>
+      labels.zipWithIndex.map { case (valor, i) => (orig, num, i, valor) }
+  }.toSeq
+  val mapaDF = mapaIndices.toDF("atributo", "columna_num", "indice", "valor_original")
+  mapaDF.orderBy("atributo", "indice").show(mapaIndices.size, false)
+  mapaDF.coalesce(1).write.mode("overwrite").option("header", "true").csv(PATH + "census_indices")
+
+  indexerModel
+}
+
+def codificar(finalDF: DataFrame, indexerModel: StringIndexerModel): DataFrame = {
+  val indexed = indexerModel.transform(finalDF).drop(attributeColumns: _*)
 
   indexed.show(5, false)
 
@@ -587,15 +631,26 @@ def procesar(nombre: String, rawDF: DataFrame): DataFrame = {
   treesDF
 }
 
-val trainCensusDF = procesar("train", trainRawDF)
-val testCensusDF = procesar("test", testRawDF)
+// 1) Ajuste con train
+println("\n================ Ajuste con train ================")
+val (modasTrain, limitesTrain) = ajustarParametros(trainDF)
+val trainCappedDF = limpiar("train", trainDF, modasTrain, limitesTrain)
+analizarCramer(trainCappedDF)
+val trainFinalDF = seleccionar(trainCappedDF)
+val indexerTrain = ajustarIndexer(trainFinalDF)
+val trainCensusDF = codificar(trainFinalDF, indexerTrain)
+
+// 2) Test: mismas transformaciones, sin recalcular ningún estadístico ni métrica de asociación
+val testCappedDF = limpiar("test", testDF, modasTrain, limitesTrain)
+val testCensusDF = codificar(seleccionar(testCappedDF), indexerTrain)
 
 // NTAIE: instancias originales que no llegan a los conjuntos finales (train + test)
+val totalRows = fullCensusDF.count()
 val instanciasFinales = trainCensusDF.count() + testCensusDF.count()
 val NTAIE = totalRows - instanciasFinales
 println(s"\nInstancias originales: $totalRows | finales (train + test): $instanciasFinales")
 println(s"NTAIE (Numero total de ausentes/inconsistentes eliminados) = $NTAIE")
-println(s"  (ausentes '?' imputados con la moda, no eliminados; vacías: $nEmpty, inválidas: $nInvalid, duplicadas conservadas: $nDup)")
+println(s"  (ausentes '?' imputados con la moda, no eliminados; en train -> vacías: $nEmpty, inválidas: $nInvalid, duplicadas conservadas: $nDup)")
 
 // NTOE: los atípicos no se eliminan, se capan; no se pierde ninguna instancia por este motivo
 val NTOE = 0L
