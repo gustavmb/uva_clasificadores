@@ -627,10 +627,10 @@ attrs.foreach {
 }
 println()
 
-val evaluator = new MulticlassClassificationEvaluator()
+val evaluator = (new MulticlassClassificationEvaluator()
   .setLabelCol("label")
   .setPredictionCol("prediction")
-  .setMetricName("accuracy")
+  .setMetricName("accuracy"))
 
 val depths = Seq(3, 5, 8, 12)
 val bins   = Seq(64, 96, 128)
@@ -664,12 +664,12 @@ val (bd, bb, bm, btr, bte) = ok.minBy(_._5)
 println(s"\nMejor combinación (por validación): maxDepth=$bd, maxBins=$bb, errorTrain=$btr, errorValidación=$bte")
 
 // Modelo final: reentrenado con todo el conjunto de entrenamiento
-val finalModel = new DecisionTreeClassifier()
+val finalModel = (new DecisionTreeClassifier()
   .setLabelCol("label")
   .setFeaturesCol("features")
   .setMaxDepth(bd)
   .setMaxBins(bb)
-  .fit(fullTrain)
+  .fit(fullTrain))
 
 val trainPredictions = finalModel.transform(fullTrain)
 val finalTrainErr = 1.0 - evaluator.evaluate(trainPredictions)
@@ -714,6 +714,6 @@ println(finalModel.toDebugString)
 println(s"Feature importances = ${finalModel.featureImportances}")
 
 // Guardar el modelo
-finalModel.write
+(finalModel.write
   .overwrite()
-  .save(PATH + "Modelo")
+  .save(PATH + "Modelo"))
