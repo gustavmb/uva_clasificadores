@@ -5,11 +5,11 @@ import org.apache.spark.sql.functions.col
 import org.apache.spark.ml.attribute.{AttributeGroup, NominalAttribute}
 import scala.util.{Try, Success, Failure}
 
-val PATH = "./data"
+val PATH = "./"
 
 // Conjuntos ya preprocesados (columnas: features, label) generados en exploracion.scala
-val fullTrain = spark.read.parquet(PATH + "/data/census_train.parquet").cache()
-val test = spark.read.parquet(PATH + "/data/census_test.parquet").cache()
+val fullTrain = spark.read.parquet(PATH + "data/census_train.parquet").cache()
+val test = spark.read.parquet(PATH + "data/census_test.parquet").cache()
 
 // El test no interviene en la selección: se reserva un 20% del train como validación
 val Array(trainSet, valid) = fullTrain.randomSplit(Array(0.8, 0.2), seed = 42L)
