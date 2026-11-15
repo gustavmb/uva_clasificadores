@@ -1,0 +1,531 @@
+WARNING: Using incubator modules: jdk.incubator.vector
+Using Spark's default log4j profile: org/apache/spark/log4j2-defaults.properties
+26/11/15 11:23:15 WARN Utils: Your hostname, gustavomarpc, resolves to a loopback address: 127.0.1.1; using 192.168.100.177 instead (on interface enp8s0)
+26/11/15 11:23:15 WARN Utils: Set SPARK_LOCAL_IP if you need to bind to another address
+Using Spark's default log4j profile: org/apache/spark/log4j2-defaults.properties
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+Welcome to
+      ____              __
+     / __/__  ___ _____/ /__
+    _\ \/ _ \/ _ `/ __/  '_/
+   /___/ .__/\_,_/_/ /_/\_\   version 4.1.3
+      /_/
+         
+Using Scala version 2.13.17 (OpenJDK 64-Bit Server VM, Java 17.0.21.0.3)
+Type in expressions to have them evaluated.
+Type :help for more information.
+26/11/15 11:23:15 WARN jline: Unable to create a system terminal, creating a dumb terminal (enable debug logging for more information)
+26/11/15 11:23:17 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+Spark context Web UI available at http://192.168.100.177:4040
+Spark context available as 'sc' (master = local[*], app id = local-1794763397362).
+Spark session available as 'spark'.
++---+--------------------+------------------------+--------------------------+--------------------+
+|age|     class_of_worker|detailed_industry_recode|detailed_occupation_recode|           education|
++---+--------------------+------------------------+--------------------------+--------------------+
+| 73|     Not in universe|                       0|                         0| High school grad...|
+| 58| Self-employed-no...|                       4|                        34| Some college but...|
+| 18|     Not in universe|                       0|                         0|          10th grade|
+|  9|     Not in universe|                       0|                         0|            Children|
+| 10|     Not in universe|                       0|                         0|            Children|
++---+--------------------+------------------------+--------------------------+--------------------+
+only showing top 5 rows
++--------+------+--------+----------+
+|  income| count|   label|percentage|
++--------+------+--------+----------+
+|- 50000.|187141|negative|     93.79|
+| 50000+.| 12382|positive|      6.21|
++--------+------+--------+----------+
+
+NA's en hispanic_origin: 874 de 199523 (0.44%)
+Nombre de Columna                   Incidencias
+-----------------------------------------------
+state_of_previous_residence                 708
+migration_code_change_in_msa              99696
+migration_code_change_in_reg              99696
+migration_code_move_within_reg            99696
+migration_prev_res_in_sunbelt             99696
+country_of_birth_father                    6713
+country_of_birth_mother                    6119
+country_of_birth_self                      3393
++---------+-----+
+|     tipo|count|
++---------+-----+
+|continuos|    6|
+|discretos|    2|
+|booleanos|    0|
+|nominales|   33|
++---------+-----+
+
+26/11/15 11:23:22 WARN SparkStringUtils: Truncated the string representation of a plan since it was too large. This behavior can be adjusted by setting 'spark.sql.debug.maxToStringFields'.
+[Stage 19:==>                                                     (1 + 23) / 24][Stage 19:====>                                                   (2 + 22) / 24][Stage 19:=======>                                                (3 + 21) / 24]                                                                                +----------+-----+----------+
+|instancias|count|percentage|
++----------+-----+----------+
+|    vacías|    0|       0.0|
+| inválidas|    0|       0.0|
+|duplicadas| 3229|      1.62|
++----------+-----+----------+
+
+[Stage 26:>  (1 + 1) / 24][Stage 27:>  (0 + 0) / 24][Stage 28:> (1 + 23) / 24][Stage 26:> (3 + 16) / 24][Stage 27:>  (0 + 0) / 24][Stage 28:=>(16 + 8) / 24][Stage 27:>  (0 + 0) / 24][Stage 29:> (0 + 24) / 24][Stage 30:>  (0 + 0) / 24][Stage 27:>  (1 + 1) / 24][Stage 29:> (1 + 23) / 24][Stage 30:>  (0 + 0) / 24][Stage 27:>(11 + 13) / 24][Stage 30:>  (0 + 0) / 24][Stage 31:>  (0 + 0) / 24][Stage 30:>  (0 + 0) / 24][Stage 31:> (0 + 15) / 24][Stage 32:>(14 + 10) / 24][Stage 30:>  (0 + 8) / 24][Stage 31:> (8 + 16) / 24][Stage 34:>   (0 + 0) / 1][Stage 34:>   (0 + 1) / 1][Stage 36:>   (0 + 1) / 1][Stage 38:>   (0 + 1) / 1][Stage 36:>   (0 + 1) / 1][Stage 40:> (0 + 11) / 11][Stage 42:>   (0 + 1) / 1][Stage 36:>   (0 + 1) / 1][Stage 40:> (0 + 11) / 11][Stage 44:>   (0 + 1) / 1][Stage 36:>   (0 + 1) / 1][Stage 40:> (0 + 11) / 11][Stage 46:>   (0 + 1) / 1][Stage 40:>               (0 + 11) / 11][Stage 46:>                 (0 + 1) / 1][Stage 40:>                                                       (0 + 11) / 11][Stage 40:=====>                                                  (1 + 10) / 11][Stage 40:==========>                                              (2 + 9) / 11][Stage 40:=========================================>               (8 + 3) / 11]                                                                                +-------------------------------+------+-------+-------+-----+-------+-------+------+-------+-----+------+--------+
+|atributo                       |count |mean   |std    |min  |25%    |50%    |75%   |max    |skew |%zeros|n_unicos|
++-------------------------------+------+-------+-------+-----+-------+-------+------+-------+-----+------+--------+
+|age                            |199523|34.49  |22.31  |0.0  |15.0   |33.0   |50.0  |90.0   |0.37 |1.42  |91      |
+|wage_per_hour                  |199523|55.43  |274.9  |0.0  |0.0    |0.0    |0.0   |9999.0 |8.94 |94.33 |1240    |
+|capital_gains                  |199523|434.72 |4697.53|0.0  |0.0    |0.0    |0.0   |99999.0|18.99|96.3  |132     |
+|capital_losses                 |199523|37.31  |271.9  |0.0  |0.0    |0.0    |0.0   |4608.0 |7.63 |98.04 |113     |
+|dividends_from_stocks          |199523|197.53 |1984.16|0.0  |0.0    |0.0    |0.0   |99999.0|27.79|89.4  |1478    |
+|instance_weight                |199523|1740.38|993.77 |37.87|1061.57|1618.12|2188.4|18656.3|1.43 |0.0   |99800   |
+|num_persons_worked_for_employer|199523|1.96   |2.37   |0.0  |0.0    |1.0    |4.0   |6.0    |0.75 |48.11 |7       |
+|weeks_worked_in_year           |199523|23.17  |24.41  |0.0  |0.0    |8.0    |52.0  |52.0   |0.21 |48.11 |53      |
++-------------------------------+------+-------+-------+-----+-------+-------+------+-------+-----+------+--------+
+
+[Stage 70:> (0 + 24) / 24][Stage 72:>  (0 + 0) / 24][Stage 73:>  (0 + 0) / 24][Stage 72:> (0 + 19) / 24][Stage 73:=>(18 + 6) / 24][Stage 74:>  (0 + 0) / 24][Stage 74:> (1 + 23) / 24][Stage 75:>  (0 + 1) / 24][Stage 76:>  (0 + 0) / 24][Stage 76:> (2 + 22) / 24][Stage 77:>  (0 + 2) / 24][Stage 78:>  (0 + 0) / 24][Stage 78:=>(20 + 4) / 24][Stage 79:> (0 + 22) / 24][Stage 80:>  (0 + 0) / 24][Stage 80:>  (0 + 1) / 24][Stage 81:>  (0 + 0) / 24][Stage 82:> (1 + 23) / 24][Stage 81:> (2 + 22) / 24][Stage 83:>  (0 + 2) / 24][Stage 84:>  (0 + 0) / 24][Stage 84:> (1 + 23) / 24][Stage 85:>  (0 + 1) / 24][Stage 86:>  (0 + 0) / 24][Stage 86:> (1 + 23) / 24][Stage 87:>  (0 + 1) / 24][Stage 88:>  (0 + 0) / 24][Stage 88:=>(16 + 8) / 24][Stage 89:> (0 + 17) / 24][Stage 90:>  (0 + 0) / 24][Stage 91:> (0 + 24) / 24][Stage 92:>  (0 + 0) / 24][Stage 93:>  (0 + 0) / 24][Stage 93:> (0 + 24) / 24][Stage 94:>  (0 + 0) / 24][Stage 95:>  (0 + 0) / 24][Stage 95:> (0 + 24) / 24][Stage 96:>  (0 + 0) / 24][Stage 97:>  (0 + 0) / 24][Stage 97:> (0 + 24) / 24][Stage 98:>  (0 + 0) / 24][Stage 100:>  (0 + 0) / 1][Stage 98:=>(23 + 1) / 24][Stage 100:>  (0 + 1) / 1][Stage 102:>  (0 + 1) / 1]                                                                                +-----------------------------------------+----------------+---------------------------------+----------+
+|atributo                                 |valores_posibles|moda                             |frecuencia|
++-----------------------------------------+----------------+---------------------------------+----------+
+|class_of_worker                          |9               |Not in universe                  |100245    |
+|detailed_industry_recode                 |52              |0                                |100684    |
+|detailed_occupation_recode               |47              |0                                |100684    |
+|education                                |17              |High school graduate             |48407     |
+|enroll_in_edu_inst_last_wk               |3               |Not in universe                  |186943    |
+|marital_stat                             |7               |Never married                    |86485     |
+|major_industry_code                      |24              |Not in universe or children      |100684    |
+|major_occupation_code                    |15              |Not in universe                  |100684    |
+|race                                     |5               |White                            |167365    |
+|hispanic_origin                          |10              |All other                        |171907    |
+|sex                                      |2               |Female                           |103984    |
+|member_of_a_labor_union                  |3               |Not in universe                  |180459    |
+|reason_for_unemployment                  |6               |Not in universe                  |193453    |
+|full_or_part_time_employment_stat        |8               |Children or Armed Forces         |123769    |
+|tax_filer_stat                           |6               |Nonfiler                         |75094     |
+|region_of_previous_residence             |6               |Not in universe                  |183750    |
+|state_of_previous_residence              |51              |Not in universe                  |183750    |
+|detailed_household_and_family_stat       |38              |Householder                      |53248     |
+|detailed_household_summary_in_household  |8               |Householder                      |75475     |
+|migration_code_change_in_msa             |10              |?                                |99696     |
+|migration_code_change_in_reg             |9               |?                                |99696     |
+|migration_code_move_within_reg           |10              |?                                |99696     |
+|live_in_this_house_1_year_ago            |3               |Not in universe under 1 year old |101212    |
+|migration_prev_res_in_sunbelt            |4               |?                                |99696     |
+|family_members_under_18                  |5               |Not in universe                  |144232    |
+|country_of_birth_father                  |43              |United-States                    |159163    |
+|country_of_birth_mother                  |43              |United-States                    |160479    |
+|country_of_birth_self                    |43              |United-States                    |176989    |
+|citizenship                              |5               |Native- Born in the United States|176992    |
+|own_business_or_self_employed            |3               |0                                |180672    |
+|fill_inc_questionnaire_for_veterans_admin|3               |Not in universe                  |197539    |
+|veterans_benefits                        |3               |2                                |150130    |
+|year                                     |2               |94                               |99827     |
++-----------------------------------------+----------------+---------------------------------+----------+
+
+[Stage 240:>(0 + 24) / 24][Stage 241:> (0 + 0) / 24][Stage 242:> (0 + 0) / 24][Stage 242:>(20 + 4) / 24][Stage 243:>(0 + 21) / 24][Stage 244:> (0 + 0) / 24][Stage 245:>(20 + 4) / 24][Stage 246:>(0 + 20) / 24][Stage 247:> (0 + 0) / 24][Stage 249:>(0 + 24) / 24][Stage 250:> (0 + 0) / 24][Stage 251:> (0 + 0) / 24][Stage 251:>(8 + 16) / 24][Stage 252:> (0 + 9) / 24][Stage 253:> (0 + 0) / 24][Stage 254:>(18 + 6) / 24][Stage 255:>(0 + 19) / 24][Stage 256:> (0 + 0) / 24][Stage 257:(11 + 13) / 24][Stage 258:>(0 + 12) / 24][Stage 259:> (0 + 0) / 24][Stage 260:>(23 + 1) / 24][Stage 261:>(0 + 23) / 24][Stage 262:> (0 + 0) / 24][Stage 263:>              (1 + 23) / 24][Stage 264:>               (0 + 1) / 24]                                                                                +-----------------------------------------+---------------+-----------------+-------------+---------------+
+|atributo                                 |not_in_universe|not_in_universe_%|interrogacion|interrogacion_%|
++-----------------------------------------+---------------+-----------------+-------------+---------------+
+|migration_code_change_in_msa             |1516           |0.76             |99696        |49.97          |
+|migration_code_change_in_reg             |1516           |0.76             |99696        |49.97          |
+|migration_code_move_within_reg           |1516           |0.76             |99696        |49.97          |
+|migration_prev_res_in_sunbelt            |84054          |42.13            |99696        |49.97          |
+|country_of_birth_father                  |0              |0.0              |6713         |3.36           |
+|country_of_birth_mother                  |0              |0.0              |6119         |3.07           |
+|country_of_birth_self                    |0              |0.0              |3393         |1.7            |
+|state_of_previous_residence              |183750         |92.09            |708          |0.35           |
+|class_of_worker                          |100245         |50.24            |0            |0.0            |
+|enroll_in_edu_inst_last_wk               |186943         |93.69            |0            |0.0            |
+|major_occupation_code                    |100684         |50.46            |0            |0.0            |
+|member_of_a_labor_union                  |180459         |90.45            |0            |0.0            |
+|reason_for_unemployment                  |193453         |96.96            |0            |0.0            |
+|region_of_previous_residence             |183750         |92.09            |0            |0.0            |
+|family_members_under_18                  |144232         |72.29            |0            |0.0            |
+|fill_inc_questionnaire_for_veterans_admin|197539         |99.01            |0            |0.0            |
++-----------------------------------------+---------------+-----------------+-------------+---------------+
+
++---------------------+------+------+----------+----------+----------+
+|atributo             |q1    |q3    |limite_sup|n_atipicos|atipicos_%|
++---------------------+------+------+----------+----------+----------+
+|age                  |15.0  |50.0  |155.0     |0         |0.0       |
+|wage_per_hour        |580.0 |1200.0|3060.0    |104       |0.05      |
+|capital_gains        |2964.0|9562.0|29356.0   |403       |0.2       |
+|capital_losses       |1669.0|2001.0|2997.0    |74        |0.04      |
+|dividends_from_stocks|81.0  |1350.0|5157.0    |1610      |0.81      |
++---------------------+------+------+----------+----------+----------+
+
+Matriz de correlación de Pearson
++-------------------------------+----+-------------+-------------+--------------+---------------------+---------------+-------------------------------+--------------------+----------+
+|atributo                       |age |wage_per_hour|capital_gains|capital_losses|dividends_from_stocks|instance_weight|num_persons_worked_for_employer|weeks_worked_in_year|income_bin|
++-------------------------------+----+-------------+-------------+--------------+---------------------+---------------+-------------------------------+--------------------+----------+
+|age                            |1.0 |0.04         |0.05         |0.06          |0.1                  |0.0            |0.14                           |0.21                |0.14      |
+|wage_per_hour                  |0.04|1.0          |0.0          |0.01          |-0.01                |0.01           |0.19                           |0.2                 |0.02      |
+|capital_gains                  |0.05|0.0          |1.0          |-0.01         |0.13                 |0.0            |0.06                           |0.08                |0.24      |
+|capital_losses                 |0.06|0.01         |-0.01        |1.0           |0.04                 |0.01           |0.08                           |0.1                 |0.15      |
+|dividends_from_stocks          |0.1 |-0.01        |0.13         |0.04          |1.0                  |0.0            |0.01                           |0.01                |0.18      |
+|instance_weight                |0.0 |0.01         |0.0          |0.01          |0.0                  |1.0            |0.04                           |0.03                |0.01      |
+|num_persons_worked_for_employer|0.14|0.19         |0.06         |0.08          |0.01                 |0.04           |1.0                            |0.75                |0.22      |
+|weeks_worked_in_year           |0.21|0.2          |0.08         |0.1           |0.01                 |0.03           |0.75                           |1.0                 |0.26      |
+|income_bin                     |0.14|0.02         |0.24         |0.15          |0.18                 |0.01           |0.22                           |0.26                |1.0       |
++-------------------------------+----+-------------+-------------+--------------+---------------------+---------------+-------------------------------+--------------------+----------+
+
+Matriz de correlación de Spearman
++-------------------------------+----+-------------+-------------+--------------+---------------------+---------------+-------------------------------+--------------------+----------+
+|atributo                       |age |wage_per_hour|capital_gains|capital_losses|dividends_from_stocks|instance_weight|num_persons_worked_for_employer|weeks_worked_in_year|income_bin|
++-------------------------------+----+-------------+-------------+--------------+---------------------+---------------+-------------------------------+--------------------+----------+
+|age                            |1.0 |0.04         |0.13         |0.07          |0.25                 |0.01           |0.25                           |0.29                |0.16      |
+|wage_per_hour                  |0.04|1.0          |0.01         |0.01          |0.0                  |0.02           |0.23                           |0.22                |-0.01     |
+|capital_gains                  |0.13|0.01         |1.0          |-0.03         |0.12                 |0.0            |0.12                           |0.13                |0.22      |
+|capital_losses                 |0.07|0.01         |-0.03        |1.0           |0.07                 |0.01           |0.1                            |0.11                |0.14      |
+|dividends_from_stocks          |0.25|0.0          |0.12         |0.07          |1.0                  |0.01           |0.15                           |0.16                |0.27      |
+|instance_weight                |0.01|0.02         |0.0          |0.01          |0.01                 |1.0            |0.04                           |0.03                |0.02      |
+|num_persons_worked_for_employer|0.25|0.23         |0.12         |0.1           |0.15                 |0.04           |1.0                            |0.88                |0.23      |
+|weeks_worked_in_year           |0.29|0.22         |0.13         |0.11          |0.16                 |0.03           |0.88                           |1.0                 |0.26      |
+|income_bin                     |0.16|-0.01        |0.22         |0.14          |0.27                 |0.02           |0.23                           |0.26                |1.0       |
++-------------------------------+----+-------------+-------------+--------------+---------------------+---------------+-------------------------------+--------------------+----------+
+
++-------------------------------+-------------------------------+-------+--------+
+|atributo_1                     |atributo_2                     |pearson|spearman|
++-------------------------------+-------------------------------+-------+--------+
+|num_persons_worked_for_employer|weeks_worked_in_year           |0.747  |0.881   |
+|age                            |weeks_worked_in_year           |0.206  |0.287   |
+|dividends_from_stocks          |income_bin                     |0.176  |0.275   |
+|weeks_worked_in_year           |income_bin                     |0.262  |0.262   |
+|age                            |dividends_from_stocks          |0.105  |0.254   |
+|age                            |num_persons_worked_for_employer|0.141  |0.246   |
+|num_persons_worked_for_employer|income_bin                     |0.223  |0.235   |
+|wage_per_hour                  |num_persons_worked_for_employer|0.192  |0.229   |
+|wage_per_hour                  |weeks_worked_in_year           |0.196  |0.22    |
+|capital_gains                  |income_bin                     |0.241  |0.22    |
+|age                            |income_bin                     |0.136  |0.162   |
+|dividends_from_stocks          |weeks_worked_in_year           |0.014  |0.156   |
+|dividends_from_stocks          |num_persons_worked_for_employer|0.007  |0.151   |
+|capital_losses                 |income_bin                     |0.147  |0.14    |
+|capital_gains                  |weeks_worked_in_year           |0.084  |0.132   |
+|age                            |capital_gains                  |0.054  |0.129   |
+|capital_gains                  |dividends_from_stocks          |0.131  |0.118   |
+|capital_gains                  |num_persons_worked_for_employer|0.058  |0.116   |
+|capital_losses                 |weeks_worked_in_year           |0.101  |0.106   |
+|capital_losses                 |num_persons_worked_for_employer|0.084  |0.099   |
+|age                            |capital_losses                 |0.063  |0.07    |
+|capital_losses                 |dividends_from_stocks          |0.042  |0.067   |
+|age                            |wage_per_hour                  |0.037  |0.045   |
+|instance_weight                |num_persons_worked_for_employer|0.043  |0.039   |
+|capital_gains                  |capital_losses                 |-0.013 |-0.028  |
+|instance_weight                |weeks_worked_in_year           |0.029  |0.027   |
+|instance_weight                |income_bin                     |0.014  |0.019   |
+|wage_per_hour                  |instance_weight                |0.012  |0.018   |
+|dividends_from_stocks          |instance_weight                |0.0    |0.012   |
+|wage_per_hour                  |income_bin                     |0.025  |-0.011  |
+|capital_losses                 |instance_weight                |0.008  |0.009   |
+|age                            |instance_weight                |-0.002 |0.007   |
+|wage_per_hour                  |capital_gains                  |-0.001 |0.006   |
+|wage_per_hour                  |capital_losses                 |0.011  |0.006   |
+|capital_gains                  |instance_weight                |0.003  |0.003   |
+|wage_per_hour                  |dividends_from_stocks          |-0.006 |0.001   |
++-------------------------------+-------------------------------+-------+--------+
+
+[Stage 368:==>                                                    (1 + 23) / 24][Stage 368:===============================>                      (14 + 10) / 24]                                                                                train  n=  131632  positivos=   8182 (6.22%)
+test   n=   67891  positivos=   4200 (6.19%)
+total  n=  199523  positivos=  12382 (6.21%)
+Columna                             Moda imputada
+------------------------------------------------------------
+state_of_previous_residence         Not in universe
+country_of_birth_father             United-States
+country_of_birth_mother             United-States
+country_of_birth_self               United-States
+
+Columnas reducidas tras eliminacion de columnas irrelevantes: 42 -> 35
+
+Comprobación de columnas imputadas (train y test). Valor '?' no presente
+train
++---------------------------+-----------------------+-----------------------+---------------------+
+|state_of_previous_residence|country_of_birth_father|country_of_birth_mother|country_of_birth_self|
++---------------------------+-----------------------+-----------------------+---------------------+
+|0                          |0                      |0                      |0                    |
++---------------------------+-----------------------+-----------------------+---------------------+
+
+test
++---------------------------+-----------------------+-----------------------+---------------------+
+|state_of_previous_residence|country_of_birth_father|country_of_birth_mother|country_of_birth_self|
++---------------------------+-----------------------+-----------------------+---------------------+
+|0                          |0                      |0                      |0                    |
++---------------------------+-----------------------+-----------------------+---------------------+
+
+
+Valores Atipicos (Outliers): 
+train
++-------------+--------------+---------------------+
+|capital_gains|capital_losses|dividends_from_stocks|
++-------------+--------------+---------------------+
+|266          |47            |1044                 |
++-------------+--------------+---------------------+
+
+test
++-------------+--------------+---------------------+
+|capital_gains|capital_losses|dividends_from_stocks|
++-------------+--------------+---------------------+
+|137          |27            |558                  |
++-------------+--------------+---------------------+
+
+
+ Aplicando windsorizacion:
+Columna                    Límite sup.
+--------------------------------------
+capital_gains                  33188.0
+capital_losses                  2997.0
+dividends_from_stocks           5240.0
++-----------------------------------------+------------+---------+----------+
+|atributo                                 |n_categorias|cramers_v|asociacion|
++-----------------------------------------+------------+---------+----------+
+|detailed_occupation_recode               |47          |0.439    |fuerte    |
+|education                                |17          |0.389    |fuerte    |
+|major_occupation_code                    |15          |0.366    |fuerte    |
+|detailed_industry_recode                 |52          |0.295    |fuerte    |
+|major_industry_code                      |24          |0.28     |fuerte    |
+|class_of_worker                          |9           |0.259    |fuerte    |
+|detailed_household_and_family_stat       |37          |0.24     |fuerte    |
+|tax_filer_stat                           |6           |0.229    |fuerte    |
+|detailed_household_summary_in_household  |8           |0.227    |fuerte    |
+|marital_stat                             |7           |0.197    |moderada  |
+|full_or_part_time_employment_stat        |8           |0.162    |moderada  |
+|family_members_under_18                  |5           |0.159    |moderada  |
+|sex                                      |2           |0.158    |moderada  |
+|veterans_benefits                        |3           |0.144    |moderada  |
+|own_business_or_self_employed            |3           |0.086    |debil     |
+|member_of_a_labor_union                  |3           |0.073    |debil     |
+|country_of_birth_father                  |42          |0.073    |debil     |
+|country_of_birth_mother                  |42          |0.073    |debil     |
+|hispanic_origin                          |10          |0.069    |debil     |
+|enroll_in_edu_inst_last_wk               |3           |0.064    |debil     |
+|country_of_birth_self                    |42          |0.061    |debil     |
+|race                                     |5           |0.059    |debil     |
+|citizenship                              |5           |0.044    |ninguna   |
+|state_of_previous_residence              |50          |0.034    |ninguna   |
+|reason_for_unemployment                  |6           |0.028    |ninguna   |
+|region_of_previous_residence             |6           |0.028    |ninguna   |
+|live_in_this_house_1_year_ago            |3           |0.027    |ninguna   |
+|fill_inc_questionnaire_for_veterans_admin|3           |0.026    |ninguna   |
++-----------------------------------------+------------+---------+----------+
+
++----------------------------------+---------------------------------------+---------+
+|atributo_1                        |atributo_2                             |cramers_v|
++----------------------------------+---------------------------------------+---------+
+|detailed_industry_recode          |major_industry_code                    |1.0      |
+|detailed_occupation_recode        |major_occupation_code                  |1.0      |
+|detailed_household_and_family_stat|detailed_household_summary_in_household|0.976    |
+|state_of_previous_residence       |region_of_previous_residence           |0.952    |
+|country_of_birth_father           |country_of_birth_mother                |0.765    |
+|country_of_birth_self             |citizenship                            |0.719    |
+|country_of_birth_self             |country_of_birth_father                |0.663    |
+|detailed_household_and_family_stat|marital_stat                           |0.476    |
+|race                              |hispanic_origin                        |0.155    |
++----------------------------------+---------------------------------------+---------+
+
+Atributos: 42 -> 18 (incluida la clase)
+root
+ |-- detailed_occupation_recode: string (nullable = true)
+ |-- education: string (nullable = true)
+ |-- detailed_industry_recode: string (nullable = true)
+ |-- class_of_worker: string (nullable = true)
+ |-- tax_filer_stat: string (nullable = true)
+ |-- detailed_household_summary_in_household: string (nullable = true)
+ |-- marital_stat: string (nullable = true)
+ |-- full_or_part_time_employment_stat: string (nullable = true)
+ |-- family_members_under_18: string (nullable = true)
+ |-- sex: string (nullable = true)
+ |-- veterans_benefits: string (nullable = true)
+ |-- weeks_worked_in_year: double (nullable = true)
+ |-- dividends_from_stocks: double (nullable = true)
+ |-- capital_gains: double (nullable = true)
+ |-- capital_losses: double (nullable = true)
+ |-- age: double (nullable = true)
+ |-- num_persons_worked_for_employer: double (nullable = true)
+ |-- label: double (nullable = false)
+
++--------------------------+--------------------------+------------------------+------------------------------+-------------------+---------------------------------------+-------------------------------+---------------------------------+-----------------------+------+-----------------+--------------------+---------------------+-------------+--------------+----+-------------------------------+-----+
+|detailed_occupation_recode|education                 |detailed_industry_recode|class_of_worker               |tax_filer_stat     |detailed_household_summary_in_household|marital_stat                   |full_or_part_time_employment_stat|family_members_under_18|sex   |veterans_benefits|weeks_worked_in_year|dividends_from_stocks|capital_gains|capital_losses|age |num_persons_worked_for_employer|label|
++--------------------------+--------------------------+------------------------+------------------------------+-------------------+---------------------------------------+-------------------------------+---------------------------------+-----------------------+------+-----------------+--------------------+---------------------+-------------+--------------+----+-------------------------------+-----+
+|34                        |Some college but no degree|4                       |Self-employed-not incorporated|Head of household  |Householder                            |Divorced                       |Children or Armed Forces         |Not in universe        |Male  |2                |52.0                |0.0                  |0.0          |0.0           |58.0|1.0                            |0.0  |
+|0                         |10th grade                |0                       |Not in universe               |Nonfiler           |Child 18 or older                      |Never married                  |Not in labor force               |Not in universe        |Female|2                |0.0                 |0.0                  |0.0          |0.0           |18.0|0.0                            |0.0  |
+|0                         |Children                  |0                       |Not in universe               |Nonfiler           |Child under 18 never married           |Never married                  |Children or Armed Forces         |Both parents present   |Female|0                |0.0                 |0.0                  |0.0          |0.0           |9.0 |0.0                            |0.0  |
+|10                        |Some college but no degree|40                      |Private                       |Joint both under 65|Spouse of householder                  |Married-civilian spouse present|Full-time schedules              |Not in universe        |Female|2                |52.0                |0.0                  |0.0          |0.0           |48.0|1.0                            |0.0  |
+|3                         |Bachelors degree(BA AB BS)|34                      |Private                       |Joint both under 65|Householder                            |Married-civilian spouse present|Children or Armed Forces         |Not in universe        |Male  |2                |52.0                |0.0                  |5178.0       |0.0           |42.0|6.0                            |0.0  |
++--------------------------+--------------------------+------------------------+------------------------------+-------------------+---------------------------------------+-------------------------------+---------------------------------+-----------------------+------+-----------------+--------------------+---------------------+-------------+--------------+----+-------------------------------+-----+
+only showing top 5 rows
++--------------------+---------------------+-------------+--------------+----+-------------------------------+-----+------------------------------+-------------+----------------------------+-------------------+------------------+-------------------------------------------+----------------+-------------------------------------+---------------------------+-------+---------------------+
+|weeks_worked_in_year|dividends_from_stocks|capital_gains|capital_losses|age |num_persons_worked_for_employer|label|detailed_occupation_recode-num|education-num|detailed_industry_recode-num|class_of_worker-num|tax_filer_stat-num|detailed_household_summary_in_household-num|marital_stat-num|full_or_part_time_employment_stat-num|family_members_under_18-num|sex-num|veterans_benefits-num|
++--------------------+---------------------+-------------+--------------+----+-------------------------------+-----+------------------------------+-------------+----------------------------+-------------------+------------------+-------------------------------------------+----------------+-------------------------------------+---------------------------+-------+---------------------+
+|52.0                |0.0                  |0.0          |0.0           |58.0|1.0                            |0.0  |18.0                          |0.0          |17.0                        |2.0                |5.0               |3.0                                        |6.0             |7.0                                  |0.0                        |0.0    |0.0                  |
+|0.0                 |0.0                  |0.0          |0.0           |18.0|0.0                            |0.0  |46.0                          |16.0         |51.0                        |5.0                |1.0               |7.0                                        |2.0             |5.0                                  |0.0                        |1.0    |0.0                  |
+|0.0                 |0.0                  |0.0          |0.0           |9.0 |0.0                            |0.0  |46.0                          |6.0          |51.0                        |5.0                |1.0               |5.0                                        |2.0             |7.0                                  |4.0                        |1.0    |2.0                  |
+|52.0                |0.0                  |0.0          |0.0           |48.0|1.0                            |0.0  |44.0                          |0.0          |16.0                        |4.0                |3.0               |0.0                                        |4.0             |6.0                                  |0.0                        |1.0    |0.0                  |
+|52.0                |0.0                  |5178.0       |0.0           |42.0|6.0                            |0.0  |23.0                          |7.0          |23.0                        |4.0                |3.0               |3.0                                        |4.0             |7.0                                  |0.0                        |0.0    |0.0                  |
++--------------------+---------------------+-------------+--------------+----+-------------------------------+-----+------------------------------+-------------+----------------------------+-------------------+------------------+-------------------------------------------+----------------+-------------------------------------+---------------------------+-------+---------------------+
+only showing top 5 rows
++----------------------------------------------------------------------------+-----+
+|features                                                                    |label|
++----------------------------------------------------------------------------+-----+
+|[18.0,0.0,17.0,2.0,5.0,3.0,6.0,7.0,0.0,0.0,0.0,52.0,0.0,0.0,0.0,58.0,1.0]   |0.0  |
+|[46.0,16.0,51.0,5.0,1.0,7.0,2.0,5.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,18.0,0.0]   |0.0  |
+|[46.0,6.0,51.0,5.0,1.0,5.0,2.0,7.0,4.0,1.0,2.0,0.0,0.0,0.0,0.0,9.0,0.0]     |0.0  |
+|[44.0,0.0,16.0,4.0,3.0,0.0,4.0,6.0,0.0,1.0,0.0,52.0,0.0,0.0,0.0,48.0,1.0]   |0.0  |
+|[23.0,7.0,23.0,4.0,3.0,3.0,4.0,7.0,0.0,0.0,0.0,52.0,0.0,5178.0,0.0,42.0,6.0]|0.0  |
++----------------------------------------------------------------------------+-----+
+only showing top 5 rows
+[Stage 553:>                                                      (0 + 24) / 24][Stage 553:==>                                                    (1 + 23) / 24]                                                                                maxBins = 64 (mínimo necesario: 53)
++----+-----+-----------+
+|fold|    n|% positivos|
++----+-----+-----------+
+|   0|43877|       6.22|
+|   1|43877|       6.22|
+|   2|43878|       6.22|
++----+-----+-----------+
+
+26/11/15 11:23:55 WARN BlockManager: Block rdd_1553_0 already exists on this machine; not re-adding it
+26/11/15 11:23:59 WARN BlockManager: Asked to remove block rdd_1914_8, which does not exist
+26/11/15 11:25:05 WARN DAGScheduler: Broadcasting large task binary with size 1458.0 KiB
+26/11/15 11:25:08 WARN BlockManager: Asked to remove block rdd_10060_5, which does not exist
+26/11/15 11:25:08 WARN BlockManager: Asked to remove block rdd_10060_17, which does not exist
+26/11/15 11:25:14 WARN DAGScheduler: Broadcasting large task binary with size 1610.4 KiB
+26/11/15 11:26:14 WARN DAGScheduler: Broadcasting large task binary with size 3.8 MiB
+26/11/15 11:27:12 WARN DAGScheduler: Broadcasting large task binary with size 4.0 MiB
+26/11/15 11:28:30 WARN DAGScheduler: Broadcasting large task binary with size 11.0 MiB
+[Stage 17802:>                                                    (0 + 24) / 24][Stage 17802:===================================>                 (16 + 8) / 24]                                                                                26/11/15 11:29:40 WARN DAGScheduler: Broadcasting large task binary with size 1435.8 KiB
+26/11/15 11:29:49 WARN DAGScheduler: Broadcasting large task binary with size 1591.3 KiB
+26/11/15 11:30:49 WARN DAGScheduler: Broadcasting large task binary with size 3.8 MiB
+26/11/15 11:31:48 WARN DAGScheduler: Broadcasting large task binary with size 3.9 MiB
+26/11/15 11:33:05 WARN DAGScheduler: Broadcasting large task binary with size 11.0 MiB
+[Stage 35052:>                                                    (0 + 24) / 24][Stage 35052:========>                                            (4 + 20) / 24]                                                                                26/11/15 11:34:07 WARN BlockManager: Asked to remove block rdd_62445_0, which does not exist
+26/11/15 11:34:10 WARN BlockManager: Asked to remove block rdd_62735_23, which does not exist
+26/11/15 11:34:14 WARN DAGScheduler: Broadcasting large task binary with size 1458.7 KiB
+26/11/15 11:34:23 WARN DAGScheduler: Broadcasting large task binary with size 1610.7 KiB
+26/11/15 11:34:48 WARN BlockManager: Asked to remove block rdd_66813_10, which does not exist
+26/11/15 11:34:48 WARN BlockManager: Asked to remove block rdd_66813_3, which does not exist
+26/11/15 11:34:48 WARN BlockManager: Asked to remove block rdd_66813_2, which does not exist
+26/11/15 11:34:48 WARN BlockManager: Asked to remove block rdd_66813_4, which does not exist
+26/11/15 11:34:48 WARN BlockManager: Asked to remove block rdd_66813_20, which does not exist
+26/11/15 11:35:23 WARN DAGScheduler: Broadcasting large task binary with size 3.8 MiB
+26/11/15 11:36:21 WARN DAGScheduler: Broadcasting large task binary with size 4.0 MiB
+26/11/15 11:37:39 WARN DAGScheduler: Broadcasting large task binary with size 10.9 MiB
+[Stage 52076:>                                                    (0 + 24) / 24]                                                                                
+=== Fase 1 (grano grueso): AUC-PR medio en validación cruzada (3 particiones) ===
+maxDepth  maxIter stepSize     AUC-PR      desv.
+------------------------------------------------
+26/11/15 11:38:34 WARN DAGScheduler: Broadcasting large task binary with size 1592.5 KiB
+26/11/15 11:38:35 WARN DAGScheduler: Broadcasting large task binary with size 1573.4 KiB
+26/11/15 11:38:35 WARN DAGScheduler: Broadcasting large task binary with size 1592.8 KiB
+26/11/15 11:38:35 WARN DAGScheduler: Broadcasting large task binary with size 1440.1 KiB
+26/11/15 11:38:36 WARN DAGScheduler: Broadcasting large task binary with size 1417.9 KiB
+26/11/15 11:38:36 WARN DAGScheduler: Broadcasting large task binary with size 1440.8 KiB
+26/11/15 11:38:36 WARN DAGScheduler: Broadcasting large task binary with size 4.0 MiB
+26/11/15 11:38:37 WARN DAGScheduler: Broadcasting large task binary with size 3.9 MiB
+26/11/15 11:38:38 WARN DAGScheduler: Broadcasting large task binary with size 4.0 MiB
+26/11/15 11:38:38 WARN DAGScheduler: Broadcasting large task binary with size 3.8 MiB
+26/11/15 11:38:39 WARN DAGScheduler: Broadcasting large task binary with size 3.8 MiB
+26/11/15 11:38:39 WARN DAGScheduler: Broadcasting large task binary with size 3.8 MiB
+26/11/15 11:38:40 WARN DAGScheduler: Broadcasting large task binary with size 11.0 MiB
+[Stage 56166:>                                                    (0 + 24) / 24]                                                                                26/11/15 11:38:42 WARN DAGScheduler: Broadcasting large task binary with size 11.0 MiB
+[Stage 56190:>                                                    (0 + 24) / 24]                                                                                26/11/15 11:38:44 WARN DAGScheduler: Broadcasting large task binary with size 10.9 MiB
+[Stage 56214:>                                                    (0 + 24) / 24]                                                                                       3      300     0.10     0.6436     0.0050
+       3      100     0.10     0.6338     0.0024
+       5      100     0.10     0.6278     0.0066
+       5      300     0.10     0.6226     0.0046
+       7      100     0.10     0.5966     0.0074
+       7      300     0.10     0.5891     0.0046
+Mejor de la fase 1: maxDepth = 3, maxIter = 300
+26/11/15 11:39:41 WARN DAGScheduler: Broadcasting large task binary with size 1030.1 KiB
+26/11/15 11:40:05 WARN DAGScheduler: Broadcasting large task binary with size 1574.0 KiB
+26/11/15 11:41:01 WARN DAGScheduler: Broadcasting large task binary with size 1060.1 KiB
+26/11/15 11:41:26 WARN DAGScheduler: Broadcasting large task binary with size 2.5 MiB
+26/11/15 11:42:18 WARN DAGScheduler: Broadcasting large task binary with size 1610.4 KiB
+26/11/15 11:43:10 WARN DAGScheduler: Broadcasting large task binary with size 2.5 MiB
+26/11/15 11:43:14 WARN DAGScheduler: Broadcasting large task binary with size 1092.8 KiB
+26/11/15 11:44:27 WARN DAGScheduler: Broadcasting large task binary with size 1620.9 KiB
+26/11/15 11:44:44 WARN DAGScheduler: Broadcasting large task binary with size 2.4 MiB
+26/11/15 11:45:40 WARN DAGScheduler: Broadcasting large task binary with size 1030.2 KiB
+26/11/15 11:46:04 WARN DAGScheduler: Broadcasting large task binary with size 1558.5 KiB
+26/11/15 11:47:00 WARN DAGScheduler: Broadcasting large task binary with size 1059.5 KiB
+26/11/15 11:47:24 WARN DAGScheduler: Broadcasting large task binary with size 2.5 MiB
+26/11/15 11:48:16 WARN DAGScheduler: Broadcasting large task binary with size 1591.3 KiB
+26/11/15 11:49:09 WARN DAGScheduler: Broadcasting large task binary with size 2.5 MiB
+26/11/15 11:49:12 WARN DAGScheduler: Broadcasting large task binary with size 1095.4 KiB
+26/11/15 11:50:25 WARN DAGScheduler: Broadcasting large task binary with size 1614.1 KiB
+26/11/15 11:50:42 WARN DAGScheduler: Broadcasting large task binary with size 2.4 MiB
+26/11/15 11:51:39 WARN DAGScheduler: Broadcasting large task binary with size 1037.2 KiB
+26/11/15 11:52:03 WARN DAGScheduler: Broadcasting large task binary with size 1576.1 KiB
+26/11/15 11:52:59 WARN DAGScheduler: Broadcasting large task binary with size 1065.7 KiB
+26/11/15 11:53:23 WARN DAGScheduler: Broadcasting large task binary with size 2.5 MiB
+26/11/15 11:54:15 WARN DAGScheduler: Broadcasting large task binary with size 1610.7 KiB
+26/11/15 11:55:08 WARN DAGScheduler: Broadcasting large task binary with size 2.5 MiB
+26/11/15 11:55:12 WARN DAGScheduler: Broadcasting large task binary with size 1092.8 KiB
+26/11/15 11:56:25 WARN DAGScheduler: Broadcasting large task binary with size 1626.0 KiB
+26/11/15 11:56:43 WARN DAGScheduler: Broadcasting large task binary with size 2.4 MiB
+
+=== Fase 2 (grano fino): AUC-PR medio en validación cruzada (3 particiones) ===
+maxDepth  maxIter stepSize     AUC-PR      desv.
+------------------------------------------------
+26/11/15 11:57:25 WARN DAGScheduler: Broadcasting large task binary with size 1012.2 KiB
+26/11/15 11:57:25 WARN DAGScheduler: Broadcasting large task binary with size 1012.3 KiB
+26/11/15 11:57:25 WARN DAGScheduler: Broadcasting large task binary with size 1019.3 KiB
+26/11/15 11:57:26 WARN DAGScheduler: Broadcasting large task binary with size 1556.1 KiB
+26/11/15 11:57:26 WARN DAGScheduler: Broadcasting large task binary with size 1540.6 KiB
+26/11/15 11:57:26 WARN DAGScheduler: Broadcasting large task binary with size 1558.2 KiB
+26/11/15 11:57:27 WARN DAGScheduler: Broadcasting large task binary with size 2.5 MiB
+26/11/15 11:57:27 WARN DAGScheduler: Broadcasting large task binary with size 2.5 MiB
+26/11/15 11:57:28 WARN DAGScheduler: Broadcasting large task binary with size 2.4 MiB
+26/11/15 11:57:28 WARN DAGScheduler: Broadcasting large task binary with size 1042.2 KiB
+26/11/15 11:57:28 WARN DAGScheduler: Broadcasting large task binary with size 1041.6 KiB
+26/11/15 11:57:29 WARN DAGScheduler: Broadcasting large task binary with size 1047.8 KiB
+26/11/15 11:57:29 WARN DAGScheduler: Broadcasting large task binary with size 1592.5 KiB
+26/11/15 11:57:30 WARN DAGScheduler: Broadcasting large task binary with size 1573.4 KiB
+26/11/15 11:57:30 WARN DAGScheduler: Broadcasting large task binary with size 1592.8 KiB
+26/11/15 11:57:30 WARN DAGScheduler: Broadcasting large task binary with size 2.5 MiB
+26/11/15 11:57:31 WARN DAGScheduler: Broadcasting large task binary with size 2.4 MiB
+26/11/15 11:57:31 WARN DAGScheduler: Broadcasting large task binary with size 2.4 MiB
+26/11/15 11:57:32 WARN DAGScheduler: Broadcasting large task binary with size 1075.0 KiB
+26/11/15 11:57:32 WARN DAGScheduler: Broadcasting large task binary with size 1077.5 KiB
+26/11/15 11:57:32 WARN DAGScheduler: Broadcasting large task binary with size 1074.9 KiB
+26/11/15 11:57:33 WARN DAGScheduler: Broadcasting large task binary with size 1603.0 KiB
+26/11/15 11:57:33 WARN DAGScheduler: Broadcasting large task binary with size 1596.2 KiB
+26/11/15 11:57:34 WARN DAGScheduler: Broadcasting large task binary with size 1608.1 KiB
+26/11/15 11:57:34 WARN DAGScheduler: Broadcasting large task binary with size 2.4 MiB
+26/11/15 11:57:34 WARN DAGScheduler: Broadcasting large task binary with size 2.4 MiB
+26/11/15 11:57:35 WARN DAGScheduler: Broadcasting large task binary with size 2.4 MiB
+       2      300     0.20     0.6440     0.0044
+       3      300     0.10     0.6435     0.0050
+       4      300     0.05     0.6395     0.0049
+       3      300     0.05     0.6390     0.0034
+       2      300     0.10     0.6385     0.0032
+       4      300     0.10     0.6379     0.0049
+       3      300     0.20     0.6376     0.0047
+       2      300     0.05     0.6306     0.0015
+       4      300     0.20     0.6236     0.0027
+
+Parámetros elegidos: maxDepth = 2, maxIter = 300, stepSize = 0.20, subsamplingRate = 0.8, maxBins = 64
+AUC-PR en validación cruzada (métrica de selección) = 0.6440
+26/11/15 11:57:36 WARN DAGScheduler: Broadcasting large task binary with size 3.1 MiB
+[Stage 122117:=====================================>             (53 + 19) / 72]                                                                                
+=== Predicciones fuera de muestra de la validación cruzada (solo entrenamiento) ===
+Umbral                error  precisión   recall       F1
+--------------------------------------------------------
+0.5 (por defecto)    0.0448     0.7294   0.4432   0.5514
+0.265 (elegido)      0.0525     0.5703   0.6298   0.5986
+
+Modelo final: 300 árboles, 2100 nodos en total, umbral = 0.265
+Importancia de los atributos:
+  detailed_occupation_recode                    0.2286
+  education                                     0.1642
+  dividends_from_stocks                         0.1150
+  detailed_industry_recode                      0.1007
+  sex                                           0.0879
+  age                                           0.0701
+  capital_losses                                0.0666
+  weeks_worked_in_year                          0.0566
+  capital_gains                                 0.0442
+  num_persons_worked_for_employer               0.0298
+  class_of_worker                               0.0129
+  detailed_household_summary_in_household       0.0086
+  tax_filer_stat                                0.0086
+  marital_stat                                  0.0038
+  full_or_part_time_employment_stat             0.0014
+  veterans_benefits                             0.0009
+  family_members_under_18                       0.0000
+
+Guardados: ./modeloGBT (PipelineModel completo) y ./census-test.data (partición de prueba en bruto)
+
+scala> 

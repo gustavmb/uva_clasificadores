@@ -645,8 +645,8 @@ val K_FOLDS = 3                  // validación cruzada interna
 val PARALELISMO = 2              // modelos que CrossValidator entrena a la vez
 
 // Rejilla de grano grueso (fase 1). La fase 2 se construye alrededor del mejor valor.
-val DEPTHS_GRUESO = Array(5, 10, 15)
-val TREES_GRUESO = Array(100, 300)
+val DEPTHS_GRUESO = Array(4, 8, 12)
+val TREES_GRUESO = Array(50, 100)
 val FEATURES_GRUESO = "sqrt"
 val FEATURES_FINO = Array("sqrt", "log2", "0.5")
 val SUBSAMPLING = 1.0            // fracción del bootstrap de cada árbol
@@ -782,7 +782,7 @@ val ntGrueso = pGrueso(rf.numTrees)
 println(s"Mejor de la fase 1: maxDepth = $dGrueso, numTrees = $ntGrueso")
 
 // Fase 2: grano fino (profundidades vecinas x featureSubsetStrategy), con el mejor numTrees
-val depthsFino = Array(dGrueso - 2, dGrueso, dGrueso + 2).filter(d => d >= 2 && d <= 30)
+val depthsFino = Array(dGrueso - 2, dGrueso, dGrueso + 2).filter(d => d >= 2 && d <= 14)
 val gridFino = (new ParamGridBuilder()
   .addGrid(rf.maxDepth, depthsFino)
   .addGrid(rf.numTrees, Array(ntGrueso))

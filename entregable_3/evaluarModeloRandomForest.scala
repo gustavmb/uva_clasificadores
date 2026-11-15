@@ -87,6 +87,9 @@ def evaluarModelo(datos: DataFrame, predicciones: DataFrame, nombre: String, rut
   val fpr = div(fp, fp + tn)
   val precision = div(tp, tp + fp)
   val f1 = div(2 * precision * tpr, precision + tpr)
+  val precisionNeg = div(tn, tn + fn)
+  val recallNeg = div(tn, tn + fp)
+  val f1Neg = div(2 * precisionNeg * recallNeg, precisionNeg + recallNeg)
 
   val ambasClases = (tp + fn) > 0 && (tn + fp) > 0
   val evaluador = (new BinaryClassificationEvaluator()
@@ -111,6 +114,9 @@ def evaluarModelo(datos: DataFrame, predicciones: DataFrame, nombre: String, rut
   println(f"Tasa de falsos positivos  (FPR):         $fpr%.4f")
   println(f"Precisión (clase positiva):              $precision%.4f")
   println(f"F1 (clase positiva):                     $f1%.4f")
+  println(f"Precisión (clase negativa):              $precisionNeg%.4f")
+  println(f"Recall (clase negativa):                 $recallNeg%.4f")
+  println(f"F1 (clase negativa):                     $f1Neg%.4f")
   println(f"Área bajo la curva ROC:                  $aucROC%.4f")
   println(f"Área bajo la curva PR:                   $aucPR%.4f")
 

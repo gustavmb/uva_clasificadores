@@ -1,0 +1,82 @@
+WARNING: Using incubator modules: jdk.incubator.vector
+Using Spark's default log4j profile: org/apache/spark/log4j2-defaults.properties
+26/11/15 12:45:21 WARN Utils: Your hostname, gustavomarpc, resolves to a loopback address: 127.0.1.1; using 192.168.100.177 instead (on interface enp8s0)
+26/11/15 12:45:21 WARN Utils: Set SPARK_LOCAL_IP if you need to bind to another address
+Using Spark's default log4j profile: org/apache/spark/log4j2-defaults.properties
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+Welcome to
+      ____              __
+     / __/__  ___ _____/ /__
+    _\ \/ _ \/ _ `/ __/  '_/
+   /___/ .__/\_,_/_/ /_/\_\   version 4.1.3
+      /_/
+         
+Using Scala version 2.13.17 (OpenJDK 64-Bit Server VM, Java 17.0.21.0.3)
+Type in expressions to have them evaluated.
+Type :help for more information.
+26/11/15 12:45:21 WARN jline: Unable to create a system terminal, creating a dumb terminal (enable debug logging for more information)
+26/11/15 12:45:23 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+Spark context Web UI available at http://192.168.100.177:4040
+Spark context available as 'sc' (master = local[*], app id = local-1794768323265).
+Spark session available as 'spark'.
+Modelo: 300 árboles, maxDepth = 2, stepSize = 0.2, umbral sobre P(>50k) = 0.265
+26/11/15 12:45:26 WARN SparkStringUtils: Truncated the string representation of a plan since it was too large. This behavior can be adjusted by setting 'spark.sql.debug.maxToStringFields'.
+26/11/15 12:45:27 WARN DAGScheduler: Broadcasting large task binary with size 1133.8 KiB
+[Stage 18:>                                                         (0 + 8) / 8][Stage 18:=======>                                                  (1 + 7) / 8]26/11/15 12:45:28 WARN DAGScheduler: Broadcasting large task binary with size 1141.9 KiB
+                                                                                26/11/15 12:45:28 WARN DAGScheduler: Broadcasting large task binary with size 1156.3 KiB
+26/11/15 12:45:29 WARN DAGScheduler: Broadcasting large task binary with size 1147.5 KiB
+26/11/15 12:45:29 WARN DAGScheduler: Broadcasting large task binary with size 1147.5 KiB
+
+================================================================
+ EVALUACIÓN DEL MODELO GBT (Gradient-Boosted Trees)
+================================================================
+Instancias evaluadas: 67891
+Tasa de error:            0.0529
+Desviación estándar:      0.0009
+IC 95% de la tasa error:  [0.0512, 0.0545]
+
+Matriz de confusión (filas = clase real, columnas = predicción):
+                       pred. - 50000.  pred. 50000+.
+real - 50000. (0)               61631           2060
+real 50000+.  (1)                1529           2671
+
+Tasa de ciertos positivos (TPR, recall): 0.6360
+Tasa de falsos positivos  (FPR):         0.0323
+Precisión (clase positiva):              0.5646
+F1 (clase positiva):                     0.5981
+Precisión (clase negativa):              0.9758
+Recall (clase negativa):                 0.9677
+F1 (clase negativa):                     0.9717
+Área bajo la curva ROC:                  0.9486
+Área bajo la curva PR:                   0.6413
+26/11/15 12:45:29 WARN DAGScheduler: Broadcasting large task binary with size 1144.2 KiB
+
+Curva ROC (106 puntos, guardada en ./curvaROC_GBT):
+       FPR        TPR
+    0.0000     0.0000
+    0.0066     0.3493
+    0.0224     0.5614
+    0.0400     0.6748
+    0.0641     0.7631
+    0.0895     0.8250
+    0.1186     0.8667
+    0.1484     0.9005
+    0.1787     0.9240
+    0.2094     0.9419
+    0.2356     0.9526
+    0.2665     0.9638
+    0.2977     0.9705
+    0.3306     0.9783
+    0.3656     0.9824
+    0.4028     0.9864
+    0.4412     0.9895
+    0.4930     0.9955
+    0.5446     0.9974
+    0.6095     0.9983
+    0.6787     1.0000
+    1.0000     1.0000
+
+Apéndice I: 67891 -> 67891 instancias | NTAIE = 0 | NTOE = 0 | tasa de no clasificados = 0.0
+
+scala> 
