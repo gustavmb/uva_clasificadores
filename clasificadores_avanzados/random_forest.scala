@@ -11,6 +11,15 @@ val PATH = "./"
 val fullTrain = spark.read.parquet(PATH + "data/census_train.parquet").cache()
 val test = spark.read.parquet(PATH + "data/census_test.parquet").cache()
 
+println("Distribución de clases en fullTrain:")
+val total = fullTrain.count().toDouble
+
+fullTrain.groupBy("label")
+  .count()
+  .orderBy("label")
+  .withColumn("pct", col("count") / total * 100.0)
+  .show(false)
+
 // El test no interviene en la selección: se reserva un 20% del train como validación
 val Array(trainSet, valid) = fullTrain.randomSplit(Array(0.8, 0.2), seed = 42L)
 val train = trainSet.cache()
@@ -46,6 +55,7 @@ val results = for (n <- numTrees; d <- depths; b <- bins) yield {
       .setNumTrees(n)
       .setMaxDepth(d)
       .setMaxBins(b)
+      .setFeatureSubsetStrategy("sqrt")
       .setSeed(42L)
       .setThresholds(Array(0.7, 0.3))
       .fit(train)
@@ -76,6 +86,7 @@ val finalModel = (new RandomForestClassifier()
   .setMaxDepth(bd)
   .setMaxBins(bb)
   .setThresholds(Array(0.7, 0.3))
+  .setFeatureSubsetStrategy("sqrt")
   .setSeed(42L)
   .fit(fullTrain))
 
@@ -137,4 +148,4 @@ println(s"Feature importances = ${finalModel.featureImportances}")
 
 (finalModel.write
   .overwrite()
-  .save(PATH + "ModeloRandomForest"))
+  .save(PATH + "modeloRF"))
