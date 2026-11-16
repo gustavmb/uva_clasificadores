@@ -1,0 +1,83 @@
+WARNING: Using incubator modules: jdk.incubator.vector
+Using Spark's default log4j profile: org/apache/spark/log4j2-defaults.properties
+26/11/16 00:09:46 WARN Utils: Your hostname, gustavomarpc, resolves to a loopback address: 127.0.1.1; using 192.168.100.177 instead (on interface enp8s0)
+26/11/16 00:09:46 WARN Utils: Set SPARK_LOCAL_IP if you need to bind to another address
+Using Spark's default log4j profile: org/apache/spark/log4j2-defaults.properties
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+Welcome to
+      ____              __
+     / __/__  ___ _____/ /__
+    _\ \/ _ \/ _ `/ __/  '_/
+   /___/ .__/\_,_/_/ /_/\_\   version 4.1.3
+      /_/
+         
+Using Scala version 2.13.17 (OpenJDK 64-Bit Server VM, Java 17.0.21.0.3)
+Type in expressions to have them evaluated.
+Type :help for more information.
+26/11/16 00:09:46 WARN jline: Unable to create a system terminal, creating a dumb terminal (enable debug logging for more information)
+26/11/16 00:09:48 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+Spark context Web UI available at http://192.168.100.177:4040
+Spark context available as 'sc' (master = local[*], app id = local-1794809388316).
+Spark session available as 'spark'.
+Modelo: 100 árboles, maxDepth = 12, featureSubsetStrategy = sqrt, umbral sobre P(>50k) = 0.3
+26/11/16 00:09:52 WARN DAGScheduler: Broadcasting large task binary with size 14.1 MiB
+[Stage 9:>                                                        (0 + 24) / 24][Stage 9:==>                                                      (1 + 23) / 24]26/11/16 00:09:54 WARN DAGScheduler: Broadcasting large task binary with size 14.1 MiB
+[Stage 10:>                                                       (0 + 24) / 24]                                                                                26/11/16 00:09:55 WARN DAGScheduler: Broadcasting large task binary with size 14.1 MiB
+[Stage 13:>                                                       (0 + 24) / 24]                                                                                26/11/16 00:09:57 WARN DAGScheduler: Broadcasting large task binary with size 14.1 MiB
+[Stage 16:>                                                       (0 + 24) / 24][Stage 16:==========================================>             (18 + 6) / 24]                                                                                26/11/16 00:09:59 WARN DAGScheduler: Broadcasting large task binary with size 14.1 MiB
+[Stage 24:>                                                       (0 + 24) / 24]                                                                                
+================================================================
+ EVALUACIÓN DEL MODELO Random Forest
+================================================================
+Instancias evaluadas: 67891
+Tasa de error:            0.0509
+Desviación estándar:      0.0008
+IC 95% de la tasa error:  [0.0493, 0.0526]
+
+Matriz de confusión (filas = clase real, columnas = predicción):
+                       pred. - 50000.  pred. 50000+.
+real - 50000. (0)               62148           1543
+real 50000+.  (1)                1913           2287
+
+Tasa de ciertos positivos (TPR, recall): 0.5445
+Tasa de falsos positivos  (FPR):         0.0242
+Precisión (clase positiva):              0.5971
+F1 (clase positiva):                     0.5696
+Precisión (clase negativa):              0.9701
+Recall (clase negativa):                 0.9758
+F1 (clase negativa):                     0.9729
+Área bajo la curva ROC:                  0.9434
+Área bajo la curva PR:                   0.6247
+26/11/16 00:10:00 WARN DAGScheduler: Broadcasting large task binary with size 14.1 MiB
+[Stage 35:>                                                       (0 + 24) / 24]                                                                                
+Curva ROC (113 puntos, guardada en ./curvaROC_RF):
+       FPR        TPR
+    0.0000     0.0000
+    0.0079     0.3595
+    0.0228     0.5348
+    0.0456     0.6664
+    0.0715     0.7581
+    0.0995     0.8214
+    0.1292     0.8650
+    0.1557     0.8907
+    0.1809     0.9126
+    0.2137     0.9331
+    0.2421     0.9505
+    0.2716     0.9614
+    0.3045     0.9693
+    0.3391     0.9748
+    0.3677     0.9781
+    0.4026     0.9821
+    0.4419     0.9886
+    0.4827     0.9926
+    0.5146     0.9960
+    0.5544     0.9981
+    0.6060     0.9990
+    0.6590     0.9995
+    0.7119     1.0000
+    1.0000     1.0000
+
+Apéndice I: 67891 -> 67891 instancias | NTAIE = 0 | NTOE = 0 | tasa de no clasificados = 0.0
+
+scala> 
