@@ -1,0 +1,83 @@
+WARNING: Using incubator modules: jdk.incubator.vector
+Using Spark's default log4j profile: org/apache/spark/log4j2-defaults.properties
+26/11/16 15:54:47 WARN Utils: Your hostname, gustavomarpc, resolves to a loopback address: 127.0.1.1; using 192.168.100.177 instead (on interface enp8s0)
+26/11/16 15:54:47 WARN Utils: Set SPARK_LOCAL_IP if you need to bind to another address
+Using Spark's default log4j profile: org/apache/spark/log4j2-defaults.properties
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+Welcome to
+      ____              __
+     / __/__  ___ _____/ /__
+    _\ \/ _ \/ _ `/ __/  '_/
+   /___/ .__/\_,_/_/ /_/\_\   version 4.1.3
+      /_/
+         
+Using Scala version 2.13.17 (OpenJDK 64-Bit Server VM, Java 17.0.21.0.3)
+Type in expressions to have them evaluated.
+Type :help for more information.
+26/11/16 15:54:48 WARN jline: Unable to create a system terminal, creating a dumb terminal (enable debug logging for more information)
+26/11/16 15:54:49 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+Spark context Web UI available at http://192.168.100.177:4040
+Spark context available as 'sc' (master = local[*], app id = local-1794866090017).
+Spark session available as 'spark'.
+Modelo: 100 árboles, maxIter = 100, maxDepth = 5, stepSize = 0.1, umbral sobre P(>50k) = 0.3
+26/11/16 15:54:53 WARN DAGScheduler: Broadcasting large task binary with size 1430.2 KiB
+[Stage 9:>                                                        (0 + 24) / 24]26/11/16 15:54:54 WARN DAGScheduler: Broadcasting large task binary with size 1438.2 KiB
+                                                                                26/11/16 15:54:54 WARN DAGScheduler: Broadcasting large task binary with size 1453.6 KiB
+26/11/16 15:54:55 WARN DAGScheduler: Broadcasting large task binary with size 1444.3 KiB
+26/11/16 15:54:56 WARN DAGScheduler: Broadcasting large task binary with size 1444.3 KiB
+
+================================================================
+ EVALUACIÓN DEL MODELO GBT
+================================================================
+Instancias evaluadas: 67891
+Tasa de error:            0.0505
+Desviación estándar:      0.0008
+IC 95% de la tasa error:  [0.0488, 0.0521]
+
+Matriz de confusión (filas = clase real, columnas = predicción):
+                       pred. - 50000.  pred. 50000+.
+real - 50000. (0)               61908           1783
+real 50000+.  (1)                1645           2555
+
+Tasa de ciertos positivos (TPR, recall): 0.6083
+Tasa de falsos positivos  (FPR):         0.0280
+Precisión (clase positiva):              0.5890
+F1 (clase positiva):                     0.5985
+Precisión (clase negativa):              0.9741
+Recall (clase negativa):                 0.9720
+F1 (clase negativa):                     0.9731
+Área bajo la curva ROC:                  0.9487
+Área bajo la curva PR:                   0.6483
+26/11/16 15:54:56 WARN DAGScheduler: Broadcasting large task binary with size 1440.6 KiB
+
+Curva ROC (116 puntos, guardada en ./curvaROC_GBT):
+       FPR        TPR
+    0.0000     0.0000
+    0.0038     0.2881
+    0.0162     0.5057
+    0.0316     0.6307
+    0.0493     0.7205
+    0.0727     0.7855
+    0.0949     0.8271
+    0.1190     0.8700
+    0.1430     0.8940
+    0.1657     0.9124
+    0.1890     0.9283
+    0.2171     0.9426
+    0.2432     0.9529
+    0.2690     0.9607
+    0.2981     0.9693
+    0.3280     0.9769
+    0.3582     0.9819
+    0.3959     0.9864
+    0.4297     0.9902
+    0.4694     0.9955
+    0.5111     0.9969
+    0.5672     0.9979
+    0.6579     1.0000
+    1.0000     1.0000
+
+Apéndice I: 67891 -> 67891 instancias | NTAIE = 0 | NTOE = 0 | tasa de no clasificados = 0.0
+
+scala> 
